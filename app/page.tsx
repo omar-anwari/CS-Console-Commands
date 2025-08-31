@@ -95,7 +95,7 @@ export default function Home() {
   return (
     <main style={{
       minHeight: '100vh',
-      background: '#0a0a0f',
+      background: '#1a1a2e',
       position: 'relative',
       overflow: 'hidden'
     }}>
@@ -116,7 +116,7 @@ export default function Home() {
           height: '40vw',
           maxWidth: '600px',
           maxHeight: '600px',
-          background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 50%)',
+          background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.25) 0%, transparent 50%)',
           borderRadius: '50%',
           top: '-10%',
           right: '-10%',
@@ -129,7 +129,7 @@ export default function Home() {
           height: '50vw',
           maxWidth: '700px',
           maxHeight: '700px',
-          background: 'radial-gradient(circle at center, rgba(168, 85, 247, 0.1) 0%, transparent 50%)',
+          background: 'radial-gradient(circle at center, rgba(168, 85, 247, 0.2) 0%, transparent 50%)',
           borderRadius: '50%',
           bottom: '-15%',
           left: '-15%',
@@ -142,7 +142,7 @@ export default function Home() {
           height: '35vw',
           maxWidth: '500px',
           maxHeight: '500px',
-          background: 'radial-gradient(circle at center, rgba(124, 58, 237, 0.08) 0%, transparent 50%)',
+          background: 'radial-gradient(circle at center, rgba(124, 58, 237, 0.15) 0%, transparent 50%)',
           borderRadius: '50%',
           top: '40%',
           left: '30%',
@@ -158,15 +158,15 @@ export default function Home() {
           left: '-50%',
           top: '-50%',
           backgroundImage: `
-            linear-gradient(rgba(139, 92, 246, 0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(139, 92, 246, 0.02) 1px, transparent 1px)
+            linear-gradient(rgba(139, 92, 246, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(139, 92, 246, 0.04) 1px, transparent 1px)
           `,
           backgroundSize: '60px 60px',
           animation: 'smoothGridMove 60s linear infinite',
-          opacity: 0.5
+          opacity: 0.7
         }} />
         
-        {/* Smooth Floating Particles - Only render on client */}
+        {/* Smooth Floating Particles */}
         {particles.map((particle) => (
           <div
             key={particle.id}
