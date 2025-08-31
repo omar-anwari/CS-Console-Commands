@@ -1,0 +1,309 @@
+name,value,default,flags,help_text
+_record,,,,Record a demo incrementally.
+ammo_357sig_small_max,24,,game client replicated,
+ammo_556mm_small_max,40,,game client replicated,
+animevents_dump,,,game cheat,List all the currently registered anim events.
+animgraph_debug_entindex,0,,game client cheat replicated,The entity to specifically debug
+animgraph_record_all,FALSE,,game client cheat replicated,"Automatically start recording AnimGraphs when they get created, and save them to disk when they are destroyed"
+annotation_clear,,,client,Clear all annotation
+automatically_open_saved_animgraph_recording,FALSE,,game client archive replicated,
+binddefaults,,,,Bind all keys to their default values.
+bot_all_weapons,,,game,Allows the bots to use all weapons
+bot_allow_grenades,TRUE,,game,"If nonzero, bots may use grenades."
+bot_allow_machine_guns,TRUE,,game,"If nonzero, bots may use the machine gun."
+bot_allow_pistols,TRUE,,game,"If nonzero, bots may use pistols."
+bot_allow_rifles,TRUE,,game,"If nonzero, bots may use rifles."
+bot_allow_rogues,TRUE,,game,"If nonzero, bots may occasionally go 'rogue'. Rogue bots do not obey radio commands, nor pursue scenario goals."
+bot_allow_shotguns,TRUE,,game,"If nonzero, bots may use shotguns."
+bot_allow_snipers,TRUE,,game,"If nonzero, bots may use sniper rifles."
+bot_allow_sub_machine_guns,TRUE,,game,"If nonzero, bots may use sub-machine guns."
+bot_auto_follow,FALSE,,game,"If nonzero, bots with high co-op may automatically follow a nearby human player."
+bot_auto_vacate,TRUE,,game,"If nonzero, bots will automatically leave to make room for human players."
+bot_chatter,normal,,game,"Control how bots talk. Allowed values: 'off', 'radio', 'minimal', or 'normal'."
+bot_eco_limit,2000,,game,"If nonzero, bots will not buy if their money falls below this amount."
+bot_join_team,any,,game,"Determines the team bots will join into. Allowed values: 'any', 'T', or 'CT'."
+bot_kick,,,game,"bot_kick <all> <t|ct> <type> <difficulty> <name> - Kicks a specific bot, or all bots, matching the given criteria."
+bot_kill,,,game cheat,"bot_kill <all> <t|ct> <type> <difficulty> <name> - Kills a specific bot, or all bots, matching the given criteria."
+bot_prefix,0,,game,This string is prefixed to the name of all bots that join the game. <difficulty> will be replaced with the bot's difficulty. <weaponclass> will be replaced with the bot's desired weapon class. <skill> will be replaced with a 0-100 representation of the bot's skill.
+bot_quota_mode,fill,normal,game,"Determines the type of quota. Allowed values: 'normal', 'fill', and 'match'. If 'fill', the server will adjust bots to keep N players in the game, where N is bot_quota. If 'match', the server will maintain a 1:N ratio of humans to bots, where N is bot_quota."
+bot_show_battlefront,FALSE,,game cheat,Show areas where rushing players will initially meet.
+bot_stop,0,,game cheat,bot_stop <1|all> | <not_bomber> | <t> | <ct>
+callvote,,,game,Start a vote on an issue.
+cam_collision,1,,client archive,"When in thirdperson and cam_collision is set to 1, an attempt is made to keep the camera from passing though walls."
+cam_ideallag,4,,client archive,Amount of lag used when matching offset to ideal angles in thirdperson view
+cc_vr_font_size,1,,client archive,"0 = small, 1 = med (default), 2 = large"
+cl_allow_animated_avatars,TRUE,,client archive,Whether or not to allow animated avatars
+cl_allow_multi_input_binds,FALSE,,client cheat,
+cl_avatar_convert_png,,,client cheat,Converts all rgb avatars in the avatars directory to png
+cl_avatar_convert_rgb,,,client cheat,Converts all png avatars in the avatars directory to rgb
+cl_change_callback_limit,0.2,,client,change callback msec warning limit
+cl_crosshairgap_useweaponvalue,FALSE,TRUE,client archive per_user,"If set to 1, the gap will update dynamically based on which weapon is currently equipped"
+cl_dm_buyrandomweapons,FALSE,TRUE,client archive,"Player will automatically receive a random weapon on spawn in deathmatch if this is set to 1 (otherwise, they will receive the last weapon)"
+cl_ent_actornames,,,client cheat,Displays the entity name for all entities that have ShouldDisplayInActorNames true in code
+cl_ent_animgraph_record,,,client cheat,Toggles recording of animgraph replay of the given entity(s)  Arguments: entityName automaticallyOpenInAnimgraphEditor  Arguments:    {entity_name} / {class_name} / {entity_index} / {no argument = pick what player is looking at}
+cl_ent_call,,,client cheat,"ent_call <funcname> <option:entname> calls function on current look target or filtername, checks on ent, then root, then mode, then map scope"
+cl_ent_clear_debug_overlays,,,client cheat,Clears all debug overlays
+cl_ent_find,,,client cheat,Find and list all entities with classnames or targetnames that contain the specified substrings. Format: find_ent <substring>
+cl_ent_picker,,,client cheat,"Toggles 'picker' mode.  When picker is on, the bounding box, pivot and debugging text is displayed for whatever entity the player is looking at.  Arguments: full - enables all debug information"
+cl_ent_remove_all,,,client cheat,Removes all entities of the specified type  Arguments:    {entity_name} / {class_name}
+cl_ent_text_no_name_really_i_mean_it,FALSE,,client cheat,
+cl_ent_ungrab,,,client cheat,un-grabs all objects
+cl_groups,,,client cheat,Show status of all spawn groups.
+cl_hide_avatar_images,0,,client archive,Hide avatar images for other players.   0 - Off.  1 - Block All  2 - Block all but friends
+cl_http_log_enable,FALSE,,client clientcmd_can_execute,Allows sending HTTP log from client main menu.
+cl_invites_only_mainmenu,FALSE,,client archive,"If turned on, will ignore all invites when user is playing a match"
+cl_itemimages_dynamically_generated,2,,client archive,"2: use render-targets, fallback to cache and disk; 1: no render targets, but use cache and fallback to disk; 0: disk assets only"
+cl_jitter_bad_threshold_up,10,20,userinfo,"When upstream packet jitter in a frame exceeds this threshold (ms), the frame is considered to have 'irregular delivery'.  This is a derived value and should not be modified manually"
+cl_join_advertise,1,,client archive,"Advertise joinable game in progress to Steam friends, otherwise need a Steam invite (2: all servers, 1: official servers, 0: none)"
+cl_mute_all_but_friends_and_party,0,,client archive,Only allow communication from friends and matchmaking party members. Set to 1 to apply the in non-competitive game modes. Set to 2 will apply the setting in all modes.
+cl_mute_enemy_team,FALSE,,client archive,Block all communication from players on the enemy team.
+cl_phys_debug_callback_entities,FALSE,,client cheat,Print all entities that get touch callbacks. Each entity is printed only once.
+cl_phys_enabled,TRUE,,client cheat,Enable all physics simulation
+cl_prop_debug,,,client cheat,"Toggle prop debug mode. If on, props will show colorcoded bounding boxes. Red means ignore all damage. White means respond physically to damage but never break. Green maps health in the range of 100 down to 1."
+cl_radar_always_centered,TRUE,,client archive,"If set to 0, the radar is maximally used. Otherwise the player is always centered, even at map extents."
+cl_radar_scale_dynamic,FALSE,,client archive,Toggles between a radar that scales dynamically to encompass all the detected elements on the map.
+cl_ragdoll_workaround_threshold,4,,client,"Mainly cosmetic, client-only effect: when client doesn't know the last position of another player that spawns a ragdoll, the ragdoll creation is simplified and ragdoll is created in the right place. If you increase this significantly, ragdoll positions on your client may be dramatically wrong, but it won't affect other clients"
+cl_rr_dump_rules,,,client cheat,Print all response rules
+cl_rr_reloadresponsesystems,,,client cheat,Reload all response system scripts.
+cl_save_animgraph_recording,,,client cheat,Saves all active animgraph recordings to disk  Arguments: automaticallyOpenInAnimgraphEditor
+cl_script_clear_watches,,,client cheat,Clear all watches from the game debug overlay
+cl_script_dump_all,,,client cheat,Dump the state of the VM to the console
+cl_script_reload_entity_code,,,client cheat,"Execute all of this entity's VScripts, replacing existing functions with the functions in the run scripts"
+cl_script_trace_disable_all,,,client cheat,Turn off all trace output
+cl_script_trace_enable_all,,,client cheat,Turn on all trace output
+cl_ticks_warning_level,0,,,"Print a message about problems with ticks and interpolation.  0=never, 1=warnings, 2=all, even if hidden by interpolation"
+cl_wallbang_heavy_threshold,22,,client cheat,The Threshold where to switch from Light to Heavy Wallbang tracer
+cl_weapon_clip_thinwalls,TRUE,,client cheat replicated,
+cl_weapon_clip_thinwalls_debug,FALSE,,client cheat replicated,
+cl_weapon_clip_thinwalls_lock,FALSE,,client cheat replicated,
+cl_weapon_clip_thinwalls_pitchlimit_down,67,,client cheat replicated,
+cl_weapon_clip_thinwalls_pitchlimit_up,77,,client cheat replicated,
+clearall,,,,Clear console output from all views.
+clientport,0,,,"If non-zero, client binds port to specific address.  Usually you should leave this blank to use a different random system-assigned port for each connection."
+con_enable,TRUE,FALSE,archive per_user,Allows the console to be activated.
+contributionscore_hostage_kill,-2,,game,"amount of contribution score for killing a hostage, normally negative"
+contributionscore_hostage_rescue_minor,1,,game,amount of contribution score added to all alive CTs per hostage rescued
+contributionscore_suicide,-2,,game,"amount of contribution score for a suicide, normally negative"
+contributionscore_team_kill,-2,,game,"amount of contribution score for a team kill, normally negative"
+cq_buffer_bloat_msecs_max,64,,replicated,Server will not allow the client to buffer up more than N ms of commands.
+crash,,,cheat,Crash the client. Optional parameter -- type of crash:  0: read from NULL  1: write to NULL  2: force an Assert  3: infinite loop  4: stack buffer overrun  5: multiple asserts across multiple threads. Optional number of threads (default 5)  6: looping memory leak until we're out of memory. Optional allocation size in bytes (default 1048576/1MB)
+cs_logtouchexpansion,-2,,game cheat,cs_logtouchexpansion <ent index or -1 for all>. Log player touch expansion component.
+cs_ShowStateTransitions,-2,,game cheat,cs_ShowStateTransitions <ent index or -1 for all>. Show player state transitions.
+differences,,,,Show all convars which are not at their default values (optional restricted to specific flags).
+dump_entity_report,,,client cheat,List all client-side entities in the scene
+dump_panorama_css_properties,,,,Prints out all valid panorama CSS properties and their documentation
+ent_actornames,,,game cheat,Displays the entity name for all entities that have ShouldDisplayInActorNames true in code
+ent_animgraph_record,,,game cheat,Toggles recording of animgraph replay of the given entity(s)  Arguments: entityName automaticallyOpenInAnimgraphEditor  Arguments:    {entity_name} / {class_name} / {entity_index} / {no argument = pick what player is looking at}
+ent_call,,,game cheat,"ent_call <funcname> <option:entname> calls function on current look target or filtername, checks on ent, then root, then mode, then map scope"
+ent_clear_debug_overlays,,,game cheat,Clears all debug overlays
+ent_find,,,game cheat,Find and list all entities with classnames or targetnames that contain the specified substrings. Format: find_ent <substring>
+ent_messages_draw,FALSE,,game client cheat replicated,Visualizes all entity input/output activity.
+ent_orient,,,game cheat,"Orient the specified entity to match the player's angles. By default, only orients target entity's YAW. Use the 'allangles' option to orient on all axis.  Format: ent_orient <entity name> <optional: allangles>"
+ent_picker,,,game cheat,"Toggles 'picker' mode.  When picker is on, the bounding box, pivot and debugging text is displayed for whatever entity the player is looking at.  Arguments: full - enables all debug information"
+ent_remove_all,,,game cheat,Removes all entities of the specified type  Arguments:    {entity_name} / {class_name}
+ent_text_no_name_really_i_mean_it,FALSE,,game cheat,
+ent_ungrab,,,game cheat,un-grabs all objects
+fps_max_tools,120,,archive,"Additional frame rate limit while in tools mode and a window other than the game window has focus. Note that fps_max still applies, this only allows the maximum frame rate for tools mode to be lower. 0=no tools specific limit."
+fs_spew_readfieldlist,,,cheat,"index <threshold bytes>: spew changes to ent index, optionally only spewing if update is > than threshold bytes"
+gameinstructor_dump_open_lessons,,,client cheat,Gives a list of all currently open lessons.
+groups,,,game cheat,Show status of all spawn groups.
+healthshot_allow_use_at_full,TRUE,,game client replicated,
+hidehud,0,,client cheat,"bitmask: 1=weapon selection, 2=flashlight, 4=all, 8=health, 16=player dead, 32=needssuit, 64=misc, 128=chat, 256=crosshair, 512=vehicle crosshair, 1024=in vehicle"
+install_dlc_workshoptools_cvar,0,-1,client,DLC Install Status
+listissues,,,game,List all the issues that can be voted on.
+log_dumpchannels,,,,Dumps information about all logging channels.
+logaddress_delall_http,,,game,Remove all http listeners from the dispatch list.
+logaddress_list_http,,,game,List all URIs currently receiving server logs
+mapoverview_allow_client_draw,FALSE,,client,Allow a client to draw on the map overview
+markup_group_ent_bbox,,,game cheat,markup_group_ent_bbox <markup_group name> -> toggle ent_bbox for all members of the named markup group
+markup_group_ent_text,,,game cheat,markup_group_ent_text <markup_group name> -> toggle ent_text for all members of the named markup group
+markup_group_spew,,,game cheat,Spew all current markup groups and their members
+mm_dedicated_force_servers,0,,,"Comma delimited list of ip:port of servers used to search for dedicated servers instead of searching for public servers. Use syntax `publicip1:port|privateip1:port,publicip2:port|privateip2:port` if your server is behind NAT. If the server is behind NAT, you can specify `0.0.0.0|privateip:port` and if server port is in the list of `mm_server_search_lan_ports` its public address should be automatically detected."
+mp_backup_restore_load_autopause,TRUE,,game,Whether to automatically pause the match after restoring round data from backup
+mp_backup_round_file,backup,,game,If set then server will save all played rounds information to files filename_date_time_team1_team2_mapname_roundnum_score1_score2.txt
+mp_backup_round_file_pattern,%prefix%_round%round%.txt,,game,"If set then server will save all played rounds information to files named by this pattern, e.g.'%prefix%_%date%_%time%_%team1%_%team2%_%map%_round%round%_score_%score1%_%score2%.txt'"
+mp_buy_allow_grenades,TRUE,,game client replicated,Whether players can purchase grenades from the buy menu or not.
+mp_buy_allow_guns,255,,game client replicated,"Whether players can purchase guns: pistols (1), SMGs (2), rifles (4), shotguns (8), sniper rifles (16), heavy MGs (32)."
+mp_ct_default_melee,weapon_knife,,game client replicated,"The default melee weapon that the CTs will spawn with.  Even if this is blank, a knife will be given. To give a taser, it should look like this: 'weapon_knife weapon_taser'.  Remember to set mp_weapons_allow_zeus to 1 if you want to give a taser!"
+mp_death_drop_grenade,2,,game client replicated,"Which grenade to drop on player death: 0=none, 1=best, 2=current or best, 3=all grenades"
+mp_defuser_allocation,0,,game client replicated,"How to allocate defusers to CTs at start or round: 0=none, 1=random, 2=everyone"
+mp_dm_bonus_percent,50,,game client replicated,Percent of points additionally awarded when someone gets a kill with the bonus weapon during the bonus period.
+mp_dogtag_despawn_time,120,,game replicated,How many seconds dogtags should stay around before despawning automatically (0 = infinite)
+mp_drop_grenade_enable,TRUE,,game client replicated,Allows players to drop grenades.
+mp_drop_knife_enable,FALSE,,game client replicated,Allows players to drop knives.
+mp_economy_reset_rounds,0,,game client replicated,Reset all player money every N rounds (0 for never)
+mp_equipment_reset_rounds,0,,game client replicated,Reset all player equipment every N rounds (0 for never)
+mp_footsteps_serverside,TRUE,,game,"Makes the server always play footstep sounds. Clients never calculate footstep sounds locally, instead relying on the server."
+mp_free_armor,0,,game client replicated,Determines whether kevlar (1+) and/or helmet (2+) are given automatically.
+mp_friendlyfire,TRUE,FALSE,game client notify replicated,Allows team members to injure other members of their team
+mp_join_grace_time,0,,game client replicated,Number of seconds after round start to allow a player to join a game
+mp_max_armor,2,,game client replicated,"Determines the highest level of armor allowed to be purchased. (0) None, (1) Kevlar, (2) Helmet"
+mp_maxmoney,16000,,game client replicated,maximum amount of money allowed in a player's account
+mp_overtime_startmoney,10000,,game client replicated,Money assigned to all players at start of every overtime half
+mp_playerid,0,,game client replicated,Controls what information player see in the status bar: 0 all names; 1 team names; 2 no names
+mp_promoted_item_enabled,FALSE,,game client notify replicated,Allow the purchasing of the promoted item.
+mp_spectators_max,2,,game client replicated,How many spectators are allowed in a match.
+mp_team_timeout_ot_max,1,,game client replicated,Max number of timeouts each team can have per OT after all OT timeouts got added.
+mp_teammatchstat_holdtime,5,,game,Decide on a match stat and hold it additionally for at least so many seconds
+mp_teammates_are_enemies,FALSE,,game client notify replicated,"When set, your teammates act as enemies and all players are valid targets."
+mp_warmuptime_all_players_connected,15,0,game client replicated,Warmup time to use when all players have connected. 0 to disable.
+mp_weapons_allow_heavy,-1,,game client replicated,"Determines which team, if any, can purchase Heavy guns. -1 = any; 0 = non; 2 = Ts; 3 = CTs."
+mp_weapons_allow_map_placed,TRUE,FALSE,game client replicated,"If this convar is set, when a match starts, the game will not delete weapons placed in the map."
+mp_weapons_allow_pistols,-1,,game client replicated,"Determines which team, if any, can purchase Pistols. -1 = any; 0 = non; 2 = Ts; 3 = CTs."
+mp_weapons_allow_rifles,-1,,game client replicated,"Determines which team, if any, can purchase Rifles. -1 = any; 0 = non; 2 = Ts; 3 = CTs."
+mp_weapons_allow_smgs,-1,,game client replicated,"Determines which team, if any, can purchase SMGs. -1 = any; 0 = non; 2 = Ts; 3 = CTs."
+mp_weapons_allow_typecount,5,,game client replicated,"Determines how many purchases of each weapon type allowed per player per round (0 to disallow purchasing, -1 to have no limit)."
+mp_weapons_allow_zeus,5,1,game client replicated,"Determines how many Zeus purchases a player can make per round (0 to disallow, -1 to have no limit)."
+nav_clear_attribute,,,game cheat,Remove given nav attribute from all areas in the selected set.
+nav_clear_attributes,,,game cheat,Clear all nav attributes of selected area.
+nav_delete_all_hull,,,game cheat,Deletes all areas with given hull category.
+nav_disconnect,,,game cheat,Disconnects selected area from all neighbor areas.
+nav_draw_externally_created,FALSE,,game cheat,
+nav_gen_connect_allow_multiple,TRUE,,game cheat,
+nav_gen_island_removal_all_hulls,TRUE,,game cheat,
+nav_gen_oriented_max_region_range,15,,game cheat,Max orientation range allowed within a region before it gets further split.
+nav_mark_attribute,,,game cheat,Set nav attribute for all areas in the selected set.
+nav_navlink_enable_splits,TRUE,,game cheat,Split wide nav links into narrower ones to increase lanes and alleviate 'crossing' effect.
+nav_potentially_visible_dot_tolerance,0.98,,game cheat,
+nav_recall_selected_set,,,game cheat,Re-selects the stored selected set.
+nav_select_allow_blocked,TRUE,,game cheat,"When selecting an area under nav_edit, allow area marked as blocked."
+nav_select_radius,,,game cheat,Adds all areas in a radius to the selection set
+nav_show_potentially_visible,0,,cheat,Show areas that are potentially visible from the current nav area
+nav_toggle_selected_set,,,game cheat,Toggles all areas into/out of the selected set.
+net_allow_multicast,TRUE,,archive,
+net_fakeclear,,,,Clear all simulated network conditions
+net_listallmessages,,,cheat,List all registered net messages
+particle_test_destroy,,,game cheat,Destroys all particle systems matching the specified name.  Arguments:    {entity_name} / {class_name} / {entity_index} / {no argument = pick what player is looking at}
+particle_test_file,0,,game cheat,Name of the particle system to dynamically spawn
+particle_test_stop,,,game cheat,Stops all particle systems on the selected entities.  Arguments:    {entity_name} / {class_name} / {entity_index} / {no argument = pick what player is looking at}
+player_debug_print_damage,FALSE,,game cheat,"When true, print amount and type of all damage received by player to console."
+player_ping_token_cooldown,20,,game cheat,Cooldown for how long it takes for a player's ping token to refresh allowing them to ping again (they get 5 tokens).
+print_changed_convars,,,,Prints all convars that have changed from their default value
+prop_debug,,,game cheat,"Toggle prop debug mode. If on, props will show colorcoded bounding boxes. Red means ignore all damage. White means respond physically to damage but never break. Green maps health in the range of 100 down to 1."
+pulse_debug_entity,,,game cheat,"Opens a graph referencing the selected entity. If it is referenced by more than 1 graph, list all the active pulse graph instances referring to that entity so you can pick which one you want."
+pulse_list_graphs,,,cheat,List all the active pulse graph instances
+r_csgo_depth_prepass_small_cull_threshold,10,,client cheat,
+r_fallback_texture_lod_scale,2,,cheat,Scale factor for requested texture size (texture streaming) - used for geo that doesn't have a precomputed UV density measure
+r_light_probe_volume_debug_grid,0,,cheat,"Show LPV debug grid, 0: off, 1: closest only 2: closest and keep 3: all"
+ragdoll_cleanup_all,,,game client cheat,Cleans up all ragdolls.
+rcon_connected_clients_allow,TRUE,,replicated,Allow clients to use rcon commands on server.
+report_cliententitysim,FALSE,,client cheat,List all clientside simulations and time - will report and turn itself off.
+report_clientthinklist,FALSE,,client cheat,List all clientside entities thinking and time - will report and turn itself off.
+reset_voice_on_input_stallout,FALSE,,userinfo,"If true, resets the input device when there was a long enough hitch between callbacks."
+rr_dump_rules,,,game cheat,Print all response rules
+rr_followup_maxdist,1800,,game cheat,'then ANY' or 'then ALL' response followups will be dispatched only to characters within this distance.
+rr_reloadresponsesystems,,,game cheat,Reload all response system scripts.
+rr_thenany_score_slop,0,,game archive cheat,"When computing respondents for a 'THEN ANY' rule, all rule-matching scores within this much of the best score will be considered."
+save_animgraph_recording,,,game cheat,Saves all active animgraph recordings to disk  Arguments: automaticallyOpenInAnimgraphEditor
+sc_listworlds,,,cheat,List all the active sceneworlds
+sc_reject_all_objects,FALSE,,cheat,
+script_clear_watches,,,game cheat,Clear all watches from the game debug overlay
+script_dump_all,,,game cheat,Dump the state of the VM to the console
+script_reload_entity_code,,,game cheat,"Execute all of this entity's VScripts, replacing existing functions with the functions in the run scripts"
+script_trace_disable_all,,,game cheat,Turn off all trace output
+script_trace_enable_all,,,game cheat,Turn on all trace output
+sellbackall,,,client clientcmd_can_execute,Attempt to refund all equipment
+server_snd_cast,,,game cheat,Casts a ray and starts a sound event where the ray hits. The sound event will retrigger periodically. Usage: snd_cast <eventname> [<retrigger time>] [<max distance>]. Arguments that are specified will become defaults for the remainder of the session.
+shake_stop,,,client cheat,Stops all active screen shakes.
+silence_dsp,FALSE,,cheat,"When on, silences all DSP mixes."
+snd_cast,,,cheat,Casts a ray and starts a sound event where the ray hits. The sound event will retrigger periodically if cl_snd_cast_retrigger is set. The sound event will clear previous snd_cast events if cl_snd_cast_clear is set. Usage: snd_cast <eventname> [<retrigger time>] [<max distance>]. Arguments that are specified will become defaults for the remainder of the session.
+snd_get_physics_surface_properties,,,cheat,Get physics surface properties for all the materials.
+snd_occlusion_min_wall_thickness,4,,cheat replicated,
+snd_print_activetracks,,,cheat,List all active tracks
+snd_print_arrangements,,,cheat,List all available sequence arrangments
+snd_print_samplers,,,cheat,List all available samplers
+snd_print_sequences,,,cheat,List all available midi sequences
+snd_sequence_stop_all_tracks,,,cheat,Stops all currently playing sequences
+snd_sos_stop_all_soundevents,,,cheat,Stops all soundevents currently on the execution list
+snd_steamaudio_enable_pathing,TRUE,,cheat,This variable is checked by soundstack to globally enabling pathing for audio processing.
+snd_steamaudio_reverb_level_db,-3,,,Adjust overall volume (dB) of the output from Steam Audio Reverb processor.
+snd_vmidi_flush,,,cheat,Purge and reload all vmidi data and files.
+snd_vmix_override_mix_decay_time,-1,,cheat,"If set > 0, overrides how long the decay time is on all mix graphs (in seconds)."
+snd_vmix_show_input_updates,FALSE,,cheat,"If set to 1, show all incoming updates to vmix inputs."
+soundscape_debug,FALSE,,game cheat,"When on, draws lines to all env_soundscape entities. Green lines show the active soundscape, red lines show soundscapes that aren't in range, and white lines show soundscapes that are in range, but not the active soundscape."
+spec_replay_rate_limit,3,,replicated,Minimum allowable pause between replay requests in seconds
+spec_show_xray,1,,client archive,"If set to 1, you can see player outlines and name IDs through walls - who you can see depends on your team and mode"
+stopsoundscape,,,client cheat,Stops all soundscape processing and fades current looping sounds
+sv_allchat,TRUE,,game notify,"Players can receive all other players' text chat, no death restrictions"
+sv_allow_annotations,FALSE,,game client replicated,Allow clients to use the annotation system on the server.
+sv_allow_votes,TRUE,,game,Allow voting?
+sv_alltalk,FALSE,,game notify,"Players can hear all other players' voice communication, no team restrictions"
+sv_auto_cstrafe_success_threshold,1,,game,"The minimum number of successful counter-strafes within a best sequence that will trigger input automation detection. The number of successes that trigger input automation detection is interpolated between the success threshold and a 'perfect' sequence (all counter-strafes in a sequence are successes), depending on the player's percentage of overlapping counter-strafe attempts."
+sv_auto_cstrafe_upper_overlap_pct_threshold,0,,game,The percentage of overlapping attempts in the attempt window below which input automation detection is triggered when all counter-strafes in a sequence are successes.
+sv_auto_full_alltalk_during_warmup_half_end,FALSE,TRUE,game,"When enabled will automatically turn on full all talk mode in warmup, at halftime and at the end of the match"
+sv_autobunnyhopping,FALSE,,game client replicated,Players automatically re-jump while holding jump button
+sv_autoexec_mapname_cfg,FALSE,,game,Execute a mapname cfg file on the server automatically in custom game modes that require it.
+sv_bot_buy_decoy_weight,1,,game,"Given a bot will buy a grenade, controls the odds of the grenade type. Proportional to all other sv_bot_buy_*_weight convars."
+sv_bot_buy_flash_weight,1,,game,"Given a bot will buy a grenade, controls the odds of the grenade type. Proportional to all other sv_bot_buy_*_weight convars."
+sv_bot_buy_hegrenade_weight,6,,game,"Given a bot will buy a grenade, controls the odds of the grenade type. Proportional to all other sv_bot_buy_*_weight convars."
+sv_bot_buy_molotov_weight,1,,game,"Given a bot will buy a grenade, controls the odds of the grenade type. Proportional to all other sv_bot_buy_*_weight convars."
+sv_bot_buy_smoke_weight,1,,game,"Given a bot will buy a grenade, controls the odds of the grenade type. Proportional to all other sv_bot_buy_*_weight convars."
+sv_bounce,0,,game client notify replicated,Bounce multiplier for when physically simulated objects collide with other objects.
+sv_cheats,FALSE,,notify replicated,Allow cheats on server
+sv_damage_prediction_allowed,TRUE,,game client replicated,
+sv_deltaticks_enforce,2,,,"By default, player must ack delta ticks in order. How to enforce it: 2 = kick all clients, 1 = kick only TV clients, 0 = do not kick."
+sv_deltaticks_log,2,,,"Whether diagnostic logging is enabled when clients ack delta ticks out of order. Policy: 2 = log all out of order acks, 1 = log only when disconnect is triggered, 0 = do not log."
+sv_disable_observer_interpolation,FALSE,,game client replicated,Disallow interpolating between observer targets on this server.
+sv_enable_alternate_baselines,1,,,"Allow alternate baseline system, set to 2 for debugging spew."
+sv_enable_delta_packing,TRUE,,,"When enabled, this allows for entity packing to use the property changes for building up the data. This is many times faster, but can be disabled for error checking."
+sv_enablebunnyhopping,FALSE,,game client replicated,Allow player speed to exceed maximum running speed
+sv_ents_write_alarm,0,,,Print callstack every time CNetworkGameServerBase::WriteEntityUpdate takes more than this amount of milliseconds
+sv_falldamage_scale,1,,game client replicated,
+sv_falldamage_to_below_player_multiplier,1,,game client replicated,Scale damage when distributed across two players
+sv_falldamage_to_below_player_ratio,0,,game client replicated,Landing on a another player's head gives them this ratio of the damage.
+sv_full_alltalk,FALSE,,game client replicated,Any player (including Spectator team) can speak to any other player
+sv_gameinstructor_disable,FALSE,,game client replicated,Force all clients to disable their game instructors.
+sv_gameinstructor_enable,FALSE,,client replicated,Force all clients to enable their game instructors.
+sv_hoststate_quit_syscall,FALSE,,,"When enabled, game server will quit immediately via syscall instead of running host states shutdown sequence"
+sv_invites_only_mainmenu,FALSE,,game client replicated,"If turned on, will ignore all invites when user is playing a match"
+sv_late_commands_allowed,5,,game,Allow N late commands to run at 0 timescale prior to running an on-time command. Negative values for network round trip based calculation with a hard cap of the of absolute value
+sv_matchpause_auto_5v5,FALSE,,game client replicated,When enabled will automatically pause the match at next freeze time if less than 5 players are connected on each team.
+sv_maxrate,0,,replicated,"Max bandwidth rate allowed on server, 0 == unlimited"
+sv_maxvelocity,3500,,game client replicated,Maximum speed any ballistically moving object is allowed to attain per axis.
+sv_minrate,98304,,replicated,"Min bandwidth rate allowed on server, 0 == unlimited"
+sv_parallel_checktransmit,2,,game,"Set to 1 to use threaded checkentities for transmit/pvs on listen servers, 2 for dedicated servers."
+sv_parallel_packentities,2,,,"Set to 1 to use threaded snapshot sending on listen servers, 2 for dedicated servers."
+sv_parallel_sendsnapshot,2,,,"0: run all send jobs on main thread; 1: send jobs run asynchronously (except on dedicated server); 2: send jobs asynchronously; 3: send jobs run in parallel but block to not overlap the next tick; 4: main server clients' send jobs run in parallel, then HLTV server jobs; this approximately matches pre-async profile for a single HLTV server configuration"
+sv_phys_debug_callback_entities,FALSE,,game cheat,Print all entities that get touch callbacks. Each entity is printed only once.
+sv_phys_enabled,TRUE,,game cheat,Enable all physics simulation
+sv_playerradio_use_allowlist,TRUE,,game,playerradio commands may only use responses from an allow list of commands.
+sv_pushaway_hostage_force,20000,,game cheat replicated,How hard the hostage is pushed away from physics objects (falls off with inverse square of distance).
+sv_quantize_movement_input,TRUE,,game client replicated,Quantize movement input values. Enabling this restricts players from using analog input to move at fractional speeds normally impossible with digital button input.
+sv_show_voip_indicator_for_enemies,FALSE,,game replicated,Makes it so the voip icon is shown over enemies as well as allies when they are talking
+sv_shutdown,,,,Sets the server to shutdown when all games have completed
+sv_spec_hear,1,,game client notify replicated,Determines who spectators can hear: 0: only spectators; 1: all players; 2: spectated team; 3: self only; 4: nobody
+sv_talk_enemy_dead,FALSE,,game client replicated,"Dead players can hear all dead enemy communication (voice, chat)"
+sv_talk_enemy_living,FALSE,,game client replicated,"Living players can hear all living enemy communication (voice, chat)"
+sv_use_hi_pri_context_switch_time,1,,game client replicated,+use search behaves as though high priority items are usable for this long after they become unusable to avoid players accidentally performing a different action.
+sv_vote_allow_in_warmup,FALSE,,game,Allow voting during warmup?
+sv_vote_allow_spectators,FALSE,,game,Allow spectators to initiate votes?
+sv_vote_count_spectator_votes,FALSE,,game,Allow spectators to vote on issues?
+sv_vote_creation_timer,120,,game,How often someone can individually call a vote.
+sv_vote_disallow_kick_on_match_point,FALSE,,game,Disallow vote kicking on the match point round.
+sv_vote_issue_kick_allowed,TRUE,,game notify replicated,Can people hold votes to kick players from the server?
+sv_vote_issue_loadbackup_allowed,TRUE,,game notify replicated,Can people hold votes to load match from backup?
+sv_vote_issue_restart_game_allowed,FALSE,,game,Can people hold votes to restart the game?
+sv_vote_timer_duration,15,,game,How long to allow voting on an issue
+sv_vote_to_changelevel_before_match_point,FALSE,,game replicated,"Restricts vote to change level to rounds prior to match point (default 0, vote is never disallowed)"
+sv_vote_to_changelevel_rndmin,0,,game replicated,"When non-zero, restricts vote to change level to this many first rounds or minutes of the match (default 0, vote is not disallowed)"
+sv_workshop_allow_other_maps,TRUE,,game,"When hosting a workshop collection, users can play other workshop map on this server when it is empty and then mapcycle into this server collection."
+tv_allow_autorecording_index,-1,,game,When >=0 restricts autorecording only to the specified TV index
+tv_allow_camera_man_steamid,0,,game,Allows tournament production cameraman to run csgo.exe -interactivecaster on SteamID 7650123456XXX and be the camera man.
+tv_allow_camera_man_steamid2,0,,game,Allows tournament production tv cameraman to run csgo.exe -interactivecaster on SteamID 7650123456XXX and be the tv camera man.
+tv_allow_static_shots,TRUE,,game,Auto director uses fixed level cameras for shots
+tv_autorecord,FALSE,,,Automatically records all games as SourceTV demos.
+tv_broadcast,FALSE,,,Automatically broadcasts all games as GOTV demos through Steam.
+tv_broadcast1,FALSE,,,Automatically broadcasts all games as GOTV[1] demos through Steam.
+tv_maxrate,0,,,"Max SourceTV spectator bandwidth rate allowed, 0 == unlimited"
+tv_password,0,,notify,SourceTV password for all clients of CSTV[0]
+tv_password1,0,,notify,"SourceTV password for all clients of CSTV[1]. If empty, tv_password is used"
+tv_playcast_delay_resync,0,,,"To alleviate intermittent network connectivity problems, this is the number of seconds to wait before actually re-syncing the stream after failure"
+tv_secure_bypass,FALSE,,,Bypass secure challenge on TV port
+tv_show_allchat,TRUE,,game,
+tv_transmitall,FALSE,,replicated,Transmit all entities (not only director view)
+ui_playsettings_directchallengekey,ST8NT-4KZG-AQD3C-3WDJ,0,client archive,
+ui_setting_advertiseforhire_auto,1,,client archive,Whether users will automatically advertise for invites (0: off; 1: last; 2: auto)
+unbindall,,,,Unbind all keys.
+vconsole_rcon_server_details,0,,,when non-empty allows for easy vconsole connection to the dedicated server.
+voice_input_stallout,2,,userinfo,Time before we consider a mic stalled out and need to reset it.
+weapon_sound_falloff_multiplier,1,,game client cheat replicated,Scaling for falloff of weapon firing sounds
