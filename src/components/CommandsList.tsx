@@ -43,7 +43,9 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
     };
 
     const handleToggleExpand = (commandName: string) => {
-        setExpandedCommand(expandedCommand === commandName ? '' : commandName);
+        requestAnimationFrame(() => {
+            setExpandedCommand(expandedCommand === commandName ? '' : commandName);
+        });
     };
 
     // Helper function to format flag names
@@ -346,25 +348,31 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                 key={`${command.name}-${index}`}
                                 className="command-card"
                                 style={{
-                                    background: '#2a2a3e',
+                                    background: '#2a2e3e',
                                     border: '2px solid #3a3a4e',
                                     borderRadius: '12px',
                                     padding: '20px',
-                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    cursor: 'pointer'
+                                    cursor: 'pointer',
+                                    transition: expandedCommand === command.name ? 'none' : 'border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s'
                                 }}
-                                onClick={() => handleToggleExpand(command.name)}
+                                onClick={() => {
+                                    handleToggleExpand(command.name);
+                                }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.borderColor = '#4a4a5e';
-                                    e.currentTarget.style.background = '#323248';
-                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                    e.currentTarget.style.boxShadow = '0 10px 30px rgba(139, 92, 246, 0.15)';
+                                    if (expandedCommand !== command.name) {
+                                        e.currentTarget.style.borderColor = '#4a4a5e';
+                                        e.currentTarget.style.background = '#323248';
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(139, 92, 246, 0.15)';
+                                    }
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.borderColor = '#3a3a4e';
-                                    e.currentTarget.style.background = '#2a2a3e';
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = 'none';
+                                    if (expandedCommand !== command.name) {
+                                        e.currentTarget.style.borderColor = '#3a3a4e';
+                                        e.currentTarget.style.background = '#2a2e3e';
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }
                                 }}
                             >
                                 {/* Command Header */}
@@ -378,7 +386,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                 }}>
                                     <div style={{ 
                                         flex: '1',
-                                        minWidth: '0'  // Allow text truncation on mobile
+                                        minWidth: '0'
                                     }}>
                                         {/* Command Name */}
                                         <div style={{
@@ -403,7 +411,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                             <span style={{
                                                 color: '#6b6b80',
                                                 fontSize: '12px',
-                                                opacity: 0.7
+                                                opacity: 0.7,
+                                                transition: 'none'
                                             }}>
                                                 {expandedCommand === command.name ? '▼' : '▶'}
                                             </span>
@@ -654,7 +663,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                 }
                                             }}
                                         >
-                                            {copiedCommand === command.name ? '✓ Copied' : '📋 Copy'}
+                                            {copiedCommand === command.name ? '✓ Copied' : 'Copy'}
                                         </button>
                                     </div>
                                 </div>
@@ -674,16 +683,9 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                             border: '2px solid #3a3a4e'
                         }}>
                             <div style={{
-                                fontSize: '48px',
-                                marginBottom: '16px',
-                                opacity: 0.5
-                            }}>
-                                🔍
-                            </div>
-                            <div style={{
                                 fontSize: '16px',
                                 fontWeight: '600',
-                                marginBottom: '8px',
+                                marginBottom: '16px',
                                 color: '#8b5cf6'
                             }}>
                                 No commands found
