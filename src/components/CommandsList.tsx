@@ -91,29 +91,110 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
     };
 
     return (
-        <div style={{
+        <div className="main-container" style={{
             maxWidth: '1400px',
             margin: '0 auto',
             padding: '20px'
         }}>
+            <style jsx>{`
+                @media (max-width: 640px) {
+                    .main-container {
+                        padding: 10px !important;
+                    }
+                    .header-title {
+                        font-size: 32px !important;
+                    }
+                    .header-subtitle {
+                        font-size: 14px !important;
+                    }
+                    .search-filter-container {
+                        flex-direction: column !important;
+                    }
+                    .search-input {
+                        min-width: 100% !important;
+                        width: 100% !important;
+                    }
+                    .category-select {
+                        width: 100% !important;
+                    }
+                    .commands-container {
+                        height: 60vh !important;
+                        min-height: 400px !important;
+                    }
+                    .command-card {
+                        padding: 12px !important;
+                    }
+                    .command-name {
+                        font-size: 16px !important;
+                    }
+                    .command-values {
+                        flex-direction: column !important;
+                        width: 100% !important;
+                    }
+                    .value-box {
+                        width: 100% !important;
+                    }
+                    .copy-button {
+                        padding: 6px 12px !important;
+                        font-size: 11px !important;
+                    }
+                    .scrollable-content {
+                        padding: 12px !important;
+                    }
+                }
+                
+                @media (min-width: 641px) and (max-width: 1024px) {
+                    .main-container {
+                        padding: 15px !important;
+                    }
+                    .header-title {
+                        font-size: 40px !important;
+                    }
+                    .commands-container {
+                        height: 65vh !important;
+                    }
+                    .command-card {
+                        padding: 16px !important;
+                    }
+                }
+                
+                div::-webkit-scrollbar {
+                    width: 8px;
+                }
+                div::-webkit-scrollbar-track {
+                    background: #2a2a3e;
+                    border-radius: 4px;
+                }
+                div::-webkit-scrollbar-thumb {
+                    background: #8b5cf6;
+                    border-radius: 4px;
+                    transition: background 0.2s;
+                }
+                div::-webkit-scrollbar-thumb:hover {
+                    background: #9f7aea;
+                }
+            `}</style>
+
             {/* Header */}
             <div style={{
                 textAlign: 'center',
                 marginBottom: '40px'
             }}>
-                <h1 style={{
+                <h1 className="header-title" style={{
                     fontSize: '48px',
                     fontWeight: '800',
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    marginBottom: '10px'
+                    marginBottom: '10px',
+                    lineHeight: '1.2'
                 }}>
                     CS2 Console Commands
                 </h1>
-                <p style={{
+                <p className="header-subtitle" style={{
                     color: '#a1a1aa',
-                    fontSize: '16px'
+                    fontSize: '16px',
+                    padding: '0 10px'
                 }}>
                     Complete list of Counter-Strike 2 console commands with detailed information
                 </p>
@@ -129,20 +210,21 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                 marginBottom: '10px',
                 marginTop: '-20px'
             }}>
-                <div style={{
+                <div className="search-filter-container" style={{
                     display: 'flex',
                     gap: '20px',
                     flexWrap: 'wrap'
                 }}>
                     {/* Search Bar */}
                     <input
+                        className="search-input"
                         type="text"
-                        placeholder="Search commands or descriptions..."
+                        placeholder="Search commands..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         style={{
                             flex: '1',
-                            minWidth: '300px',
+                            minWidth: '250px',
                             padding: '12px 16px',
                             background: '#2a2a3e',
                             border: '2px solid #3a3a4e',
@@ -164,6 +246,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
 
                     {/* Category Filter */}
                     <select
+                        className="category-select"
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                         style={{
@@ -175,7 +258,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                             fontSize: '14px',
                             outline: 'none',
                             cursor: 'pointer',
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s',
+                            minWidth: '150px'
                         }}
                         onFocus={(e) => {
                             e.currentTarget.style.borderColor = '#8b5cf6';
@@ -203,7 +287,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
             </div>
 
             {/* Commands Container with Scroll */}
-            <div style={{
+            <div className="commands-container" style={{
                 position: 'relative',
                 height: '70vh',
                 maxHeight: '800px',
@@ -243,32 +327,14 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                 }} />
 
                 {/* Scrollable Content */}
-                <div style={{
+                <div className="scrollable-content" style={{
                     height: '100%',
                     overflowY: 'auto',
                     overflowX: 'hidden',
-                    padding: '20px 20px',
+                    padding: '20px',
                     scrollbarWidth: 'thin',
                     scrollbarColor: '#8b5cf6 #2a2a3e'
                 }}>
-                    <style jsx>{`
-                        div::-webkit-scrollbar {
-                            width: 8px;
-                        }
-                        div::-webkit-scrollbar-track {
-                            background: #2a2a3e;
-                            border-radius: 4px;
-                        }
-                        div::-webkit-scrollbar-thumb {
-                            background: #8b5cf6;
-                            border-radius: 4px;
-                            transition: background 0.2s;
-                        }
-                        div::-webkit-scrollbar-thumb:hover {
-                            background: #9f7aea;
-                        }
-                    `}</style>
-
                     {/* Commands List */}
                     <div style={{
                         display: 'flex',
@@ -278,6 +344,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                         {filteredCommands.map((command, index) => (
                             <div
                                 key={`${command.name}-${index}`}
+                                className="command-card"
                                 style={{
                                     background: '#2a2a3e',
                                     border: '2px solid #3a3a4e',
@@ -305,22 +372,29 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'flex-start',
-                                    marginBottom: '16px'
+                                    marginBottom: '16px',
+                                    flexWrap: 'wrap',
+                                    gap: '10px'
                                 }}>
-                                    <div style={{ flex: '1' }}>
+                                    <div style={{ 
+                                        flex: '1',
+                                        minWidth: '0'  // Allow text truncation on mobile
+                                    }}>
                                         {/* Command Name */}
                                         <div style={{
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '12px',
-                                            marginBottom: '12px'
+                                            marginBottom: '12px',
+                                            flexWrap: 'wrap'
                                         }}>
-                                            <h3 style={{
+                                            <h3 className="command-name" style={{
                                                 fontFamily: 'monospace',
                                                 fontSize: '18px',
                                                 fontWeight: '700',
                                                 color: '#8b5cf6',
-                                                margin: 0
+                                                margin: 0,
+                                                wordBreak: 'break-word'
                                             }}>
                                                 {command.name}
                                             </h3>
@@ -336,21 +410,21 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                         </div>
 
                                         {/* Command Values Section */}
-                                        <div style={{
-                                            display: 'inline-flex',
+                                        <div className="command-values" style={{
+                                            display: 'flex',
                                             gap: '12px',
                                             marginBottom: '12px',
                                             flexWrap: 'wrap'
                                         }}>
                                             {/* Current Value */}
                                             {command.value && (
-                                                <div style={{
+                                                <div className="value-box" style={{
                                                     background: 'rgba(34, 197, 94, 0.1)',
                                                     border: '1px solid rgba(34, 197, 94, 0.2)',
                                                     borderRadius: '6px',
                                                     padding: '8px 12px',
                                                     minWidth: 'fit-content',
-                                                    display: 'inline-block'
+                                                    flex: '1 1 auto'
                                                 }}>
                                                     <div style={{
                                                         fontSize: '11px',
@@ -366,7 +440,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                         fontFamily: 'monospace',
                                                         fontSize: '14px',
                                                         color: '#22c55e',
-                                                        fontWeight: '600'
+                                                        fontWeight: '600',
+                                                        wordBreak: 'break-all'
                                                     }}>
                                                         {command.value === '' ? '(empty)' : command.value}
                                                     </div>
@@ -375,13 +450,13 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                             
                                             {/* Default Value */}
                                             {command.defaultValue && (
-                                                <div style={{
+                                                <div className="value-box" style={{
                                                     background: 'rgba(59, 130, 246, 0.1)',
                                                     border: '1px solid rgba(59, 130, 246, 0.2)',
                                                     borderRadius: '6px',
                                                     padding: '8px 12px',
                                                     minWidth: 'fit-content',
-                                                    display: 'inline-block'
+                                                    flex: '1 1 auto'
                                                 }}>
                                                     <div style={{
                                                         fontSize: '11px',
@@ -397,7 +472,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                         fontFamily: 'monospace',
                                                         fontSize: '14px',
                                                         color: '#60a5fa',
-                                                        fontWeight: '600'
+                                                        fontWeight: '600',
+                                                        wordBreak: 'break-all'
                                                     }}>
                                                         {command.defaultValue === '' ? '(empty)' : command.defaultValue}
                                                     </div>
@@ -425,9 +501,9 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                     gap: '8px',
                                                     flexWrap: 'wrap'
                                                 }}>
-                                                    {command.flags.map((flag, index) => (
+                                                    {command.flags.map((flag, flagIndex) => (
                                                         <span
-                                                            key={index}
+                                                            key={flagIndex}
                                                             title={getFlagTooltip(flag)}
                                                             style={{
                                                                 fontSize: '12px',
@@ -476,7 +552,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                 display: expandedCommand === command.name ? 'block' : '-webkit-box',
                                                 WebkitLineClamp: expandedCommand === command.name ? 'unset' : 2,
                                                 WebkitBoxOrient: 'vertical',
-                                                overflow: 'hidden'
+                                                overflow: 'hidden',
+                                                wordBreak: 'break-word'
                                             }}>
                                                 {command.description || 'No description available for this command.'}
                                             </p>
@@ -505,7 +582,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                     fontFamily: 'monospace',
                                                     fontSize: '13px',
                                                     color: '#8b5cf6',
-                                                    display: 'block'
+                                                    display: 'block',
+                                                    wordBreak: 'break-all'
                                                 }}>
                                                     {command.value || command.defaultValue ? 
                                                         `${command.name} ${command.value || command.defaultValue}` : 
@@ -529,7 +607,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                             fontFamily: 'monospace',
                                                             fontSize: '13px',
                                                             color: '#60a5fa',
-                                                            display: 'block'
+                                                            display: 'block',
+                                                            wordBreak: 'break-all'
                                                         }}>
                                                             {command.name} {command.defaultValue}
                                                         </code>
@@ -544,9 +623,10 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                         display: 'flex',
                                         flexDirection: 'column',
                                         gap: '8px',
-                                        marginLeft: '16px'
+                                        flexShrink: 0
                                     }}>
                                         <button
+                                            className="copy-button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleCopyCommand(command);
@@ -588,7 +668,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                             textAlign: 'center',
                             color: '#6b6b80',
                             fontSize: '14px',
-                            padding: '60px 20px',
+                            padding: '40px 20px',
                             background: '#2a2a3e',
                             borderRadius: '12px',
                             border: '2px solid #3a3a4e'
