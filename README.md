@@ -1,5 +1,5 @@
 # CS Console Commands Tool
-This is my scuffed console command lookup tool for CS2. You can search through 1,850+ console commands and see all the info about flags, default values, descriptions, etc. Made this using Next.js for the static site gen and some janky CSV parsing that probably needs optimization.
+This is my scuffed console command lookup tool for CS2. You can search through 2000+ console commands and see all the info about flags, default values, descriptions, etc. Made this using Next.js for the static site gen and some janky CSV parsing that probably needs optimization.
 
 ## Features
 - Search through all CS2 console commands
@@ -13,7 +13,7 @@ This is my scuffed console command lookup tool for CS2. You can search through 1
 - Tailwind CSS
 
 ## To-Do/Broken
-- [ ] CSV parsing slow when going through all 1,850+ commands (speeds up after a sec)
+- [ ] CSV parsing slow when going through all 2000+ commands (speeds up after a sec)
 - [ ] No virtualization so it's rendering all commands at once
 - [ ] Search doesn't debounce so it lags on every keystroke
 - [ ] Should probably just convert to JSON at build time
