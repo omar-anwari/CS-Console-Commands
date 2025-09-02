@@ -8,6 +8,7 @@ This is my scuffed console command lookup tool for CS2. You can search through 2
 
 ## Tech Stack
 - Next.js (with static export)
+- React
 - TypeScript
 - CSV parsing (homemade parser that's probably causing lag)
 - Tailwind CSS
