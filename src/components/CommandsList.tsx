@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { CS2Command } from '../types/command';
 import { categorizeCommands } from '../utils/commandParser';
 
@@ -9,12 +9,26 @@ interface CommandsListProps {
 
 const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
     const [copiedCommand, setCopiedCommand] = useState<string>('');
     const [expandedCommand, setExpandedCommand] = useState<string>('');
+    const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 });
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const itemHeight = 200; // Approximate height of each command card
+    const buffer = 5; // Number of items to render outside viewport
 
     const categorizedCommands = useMemo(() => categorizeCommands(commands), [commands]);
     const categories = ['All', ...Object.keys(categorizedCommands)];
+
+    // Debounce search term
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
     const filteredCommands = useMemo(() => {
         let filtered = commands;
@@ -24,22 +38,95 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
             filtered = categorizedCommands[selectedCategory] || [];
         }
 
-        // Filter by search term
-        if (searchTerm) {
+        // Filter by debounced search term
+        if (debouncedSearchTerm) {
             filtered = filtered.filter(cmd =>
-                cmd.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                cmd.description.toLowerCase().includes(searchTerm.toLowerCase())
+                cmd.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                cmd.description.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
             );
         }
 
         return filtered;
-    }, [commands, searchTerm, selectedCategory, categorizedCommands]);
+    }, [commands, debouncedSearchTerm, selectedCategory, categorizedCommands]);
 
-    const handleCopyCommand = (command: CS2Command) => {
+    // Handle scroll for virtualization
+    const handleScroll = useCallback(() => {
+        if (!scrollContainerRef.current) return;
+
+        const container = scrollContainerRef.current;
+        const scrollTop = container.scrollTop;
+        const containerHeight = container.clientHeight;
+
+        const start = Math.max(0, Math.floor(scrollTop / itemHeight) - buffer);
+        const visibleCount = Math.ceil(containerHeight / itemHeight);
+        const end = Math.min(filteredCommands.length, start + visibleCount + buffer * 2);
+
+        setVisibleRange({ start, end });
+    }, [filteredCommands.length]);
+
+    // Reset visible range when filtered commands change
+    useEffect(() => {
+        setVisibleRange({ start: 0, end: Math.min(50, filteredCommands.length) });
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = 0;
+        }
+    }, [filteredCommands]);
+
+    // Add scroll listener
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [handleScroll]);
+
+    const handleCopyCommand = async (command: CS2Command, event?: React.MouseEvent) => {
         const commandText = command.value ? `${command.name} ${command.value}` : command.name;
-        navigator.clipboard.writeText(commandText);
-        setCopiedCommand(command.name);
-        setTimeout(() => setCopiedCommand(''), 2000);
+        
+        try {
+            await navigator.clipboard.writeText(commandText);
+            setCopiedCommand(command.name);
+            
+            // Create ripple effect at click position
+            if (event && event.currentTarget) {
+                const button = event.currentTarget as HTMLElement;
+                if (button) {
+                    const rect = button.getBoundingClientRect();
+                    const ripple = document.createElement('span');
+                    const size = Math.max(rect.width, rect.height);
+                    const x = event.clientX - rect.left - size / 2;
+                    const y = event.clientY - rect.top - size / 2;
+                    
+                    ripple.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size}px;
+                        border-radius: 50%;
+                        background: rgba(34, 197, 94, 0.5);
+                        left: ${x}px;
+                        top: ${y}px;
+                        pointer-events: none;
+                        transform: scale(0);
+                        animation: ripple 0.6s ease-out;
+                    `;
+                    
+                    button.style.position = 'relative';
+                    button.style.overflow = 'hidden';
+                    button.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        if (ripple && ripple.parentNode) {
+                            ripple.remove();
+                        }
+                    }, 600);
+                }
+            }
+            
+            setTimeout(() => setCopiedCommand(''), 2000);
+        } catch (err) {
+            console.error('Failed to copy command:', err);
+        }
     };
 
     const handleToggleExpand = (commandName: string) => {
@@ -92,6 +179,105 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
         return tooltips[flag.toLowerCase()] || 'Command flag';
     };
 
+    // Syntax highlighting for command examples
+    const highlightCommandSyntax = (commandStr: string) => {
+        if (!commandStr) return null;
+        
+        const parts = commandStr.split(' ');
+        const commandName = parts[0];
+        const args = parts.slice(1).join(' ');
+        
+        return (
+            <>
+                {/* Command name */}
+                <span style={{ 
+                    color: '#8b5cf6', 
+                    fontWeight: '600' 
+                }}>
+                    {commandName}
+                </span>
+                {args && (
+                    <>
+                        <span style={{ color: '#6b6b80' }}> </span>
+                        {/* Parse and highlight arguments */}
+                        {highlightArguments(args)}
+                    </>
+                )}
+            </>
+        );
+    };
+
+    // Helper to highlight different types of arguments
+    const highlightArguments = (args: string) => {
+        // Split by spaces but keep quoted strings together
+        const regex = /(".*?"|'.*?'|\S+)/g;
+        const tokens = args.match(regex) || [];
+        
+        return tokens.map((token, index) => {
+            // Numbers
+            if (/^-?\d+\.?\d*$/.test(token)) {
+                return (
+                    <span key={index} style={{ 
+                        color: '#22c55e', 
+                        fontWeight: '500' 
+                    }}>
+                        {token}
+                    </span>
+                );
+            }
+            // Strings in quotes
+            else if (/^["'].*["']$/.test(token)) {
+                return (
+                    <span key={index} style={{ 
+                        color: '#f59e0b' 
+                    }}>
+                        {token}
+                    </span>
+                );
+            }
+            // Boolean values
+            else if (/^(true|false|TRUE|FALSE|on|off|yes|no|1|0)$/i.test(token)) {
+                return (
+                    <span key={index} style={{ 
+                        color: '#3b82f6', 
+                        fontWeight: '500' 
+                    }}>
+                        {token}
+                    </span>
+                );
+            }
+            // Operators and special characters
+            else if (/^[=<>!+\-*/|&]$/.test(token)) {
+                return (
+                    <span key={index} style={{ 
+                        color: '#ec4899', 
+                        fontWeight: '600' 
+                    }}>
+                        {token}
+                    </span>
+                );
+            }
+            // Default (parameters, flags, etc.)
+            else {
+                return (
+                    <span key={index} style={{ 
+                        color: '#60a5fa' 
+                    }}>
+                        {token}
+                    </span>
+                );
+            }
+        }).reduce((prev, curr, index) => {
+            if (index === 0) return [curr];
+            return [...prev, <span key={`space-${index}`} style={{ color: '#6b6b80' }}> </span>, curr];
+        }, [] as React.ReactNode[]);
+    };
+
+    // Get visible commands for virtualization
+    const visibleCommands = filteredCommands.slice(visibleRange.start, visibleRange.end);
+    const spacerHeight = visibleRange.start * itemHeight;
+    const totalHeight = filteredCommands.length * itemHeight;
+
     return (
         <div className="main-container" style={{
             maxWidth: '1400px',
@@ -105,6 +291,22 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                     }
                     50% {
                         opacity: 0.5;
+                    }
+                }
+                
+                @keyframes ripple {
+                    to {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+                
+                @keyframes checkmark {
+                    0% {
+                        stroke-dashoffset: 50;
+                    }
+                    100% {
+                        stroke-dashoffset: 0;
                     }
                 }
                 
@@ -310,13 +512,15 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                             Enter Commands
                         </div>
                         <div style={{ paddingLeft: '16px' }}>
-                            Type/paste the command and press Enter. <br /> Example: <code style={{
+                            Type/paste the command and press Enter. <br /> 
+                            Example: <code style={{
                                 background: 'rgba(0, 0, 0, 0.3)',
                                 padding: '2px 6px',
                                 borderRadius: '4px',
-                                color: '#22c55e',
                                 fontFamily: 'monospace'
-                            }}>fps_max 300</code>
+                            }}>
+                                {highlightCommandSyntax('fps_max 300')}
+                            </code>
                         </div>
                     </div>
                 </div>
@@ -332,10 +536,11 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                         background: 'rgba(0, 0, 0, 0.3)',
                         padding: '2px 6px',
                         borderRadius: '4px',
-                        color: '#f59e0b',
                         fontFamily: 'monospace',
                         fontSize: '12px'
-                    }}>sv_cheats 1</code> to be enabled on local/private servers only.
+                    }}>
+                        {highlightCommandSyntax('sv_cheats 1')}
+                    </code> to be enabled on local/private servers only.
                 </div>
             </div>
 
@@ -423,6 +628,11 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                     fontSize: '14px'
                 }}>
                     Showing {filteredCommands.length} commands
+                    {searchTerm !== debouncedSearchTerm && (
+                        <span style={{ color: '#8b5cf6', marginLeft: '10px' }}>
+                            Searching...
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -466,320 +676,371 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                     zIndex: 2
                 }} />
 
-                {/* Scrollable Content */}
-                <div className="scrollable-content" style={{
-                    height: '100%',
-                    overflowY: 'auto',
-                    overflowX: 'hidden',
-                    padding: '20px',
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: '#8b5cf6 #2a2a3e'
-                }}>
-                    {/* Commands List */}
+                {/* Scrollable Content with Virtualization */}
+                <div 
+                    ref={scrollContainerRef}
+                    className="scrollable-content" 
+                    style={{
+                        height: '100%',
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        padding: '20px',
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: '#8b5cf6 #2a2a3e'
+                    }}
+                >
+                    {/* Virtual List Container */}
                     <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '16px'
+                        position: 'relative',
+                        height: totalHeight + 'px'
                     }}>
-                        {filteredCommands.map((command, index) => (
-                            <div
-                                key={`${command.name}-${index}`}
-                                className="command-card"
-                                style={{
-                                    background: '#2a2e3e',
-                                    border: '2px solid #3a3a4e',
-                                    borderRadius: '12px',
-                                    padding: '20px',
-                                    cursor: 'pointer',
-                                    transition: expandedCommand === command.name ? 'none' : 'border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s'
-                                }}
-                                onClick={() => {
-                                    handleToggleExpand(command.name);
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (expandedCommand !== command.name) {
-                                        e.currentTarget.style.borderColor = '#4a4a5e';
-                                        e.currentTarget.style.background = '#323248';
-                                        e.currentTarget.style.transform = 'translateY(-2px)';
-                                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(139, 92, 246, 0.15)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (expandedCommand !== command.name) {
-                                        e.currentTarget.style.borderColor = '#3a3a4e';
-                                        e.currentTarget.style.background = '#2a2e3e';
-                                        e.currentTarget.style.transform = 'translateY(0)';
-                                        e.currentTarget.style.boxShadow = 'none';
-                                    }
-                                }}
-                            >
-                                {/* Command Header */}
-                                <div style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'flex-start',
-                                    marginBottom: '16px',
-                                    flexWrap: 'wrap',
-                                    gap: '10px'
-                                }}>
-                                    <div style={{
-                                        flex: '1',
-                                        minWidth: '0'
-                                    }}>
-                                        {/* Command Name */}
+                        {/* Spacer for scrolled items */}
+                        <div style={{ height: spacerHeight + 'px' }} />
+                        
+                        {/* Commands List - Only render visible items */}
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '16px'
+                        }}>
+                            {visibleCommands.map((command, index) => {
+                                const actualIndex = visibleRange.start + index;
+                                return (
+                                    <div
+                                        key={`${command.name}-${actualIndex}`}
+                                        className="command-card"
+                                        style={{
+                                            background: '#2a2e3e',
+                                            border: '2px solid #3a3a4e',
+                                            borderRadius: '12px',
+                                            padding: '20px',
+                                            cursor: 'pointer',
+                                            transition: expandedCommand === command.name ? 'none' : 'border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s'
+                                        }}
+                                        onClick={() => {
+                                            handleToggleExpand(command.name);
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (expandedCommand !== command.name) {
+                                                e.currentTarget.style.borderColor = '#4a4a5e';
+                                                e.currentTarget.style.background = '#323248';
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                e.currentTarget.style.boxShadow = '0 10px 30px rgba(139, 92, 246, 0.15)';
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (expandedCommand !== command.name) {
+                                                e.currentTarget.style.borderColor = '#3a3a4e';
+                                                e.currentTarget.style.background = '#2a2e3e';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                e.currentTarget.style.boxShadow = 'none';
+                                            }
+                                        }}
+                                    >
+                                        {/* Command Header */}
                                         <div style={{
                                             display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '12px',
-                                            marginBottom: '12px',
-                                            flexWrap: 'wrap'
+                                            justifyContent: 'space-between',
+                                            alignItems: 'flex-start',
+                                            marginBottom: '16px',
+                                            flexWrap: 'wrap',
+                                            gap: '10px'
                                         }}>
-                                            <h3 className="command-name" style={{
-                                                fontFamily: 'monospace',
-                                                fontSize: '18px',
-                                                fontWeight: '700',
-                                                color: '#8b5cf6',
-                                                margin: 0,
-                                                wordBreak: 'break-word'
-                                            }}>
-                                                {command.name}
-                                            </h3>
-
-                                            {/* Expand/Collapse Indicator */}
-                                            <span style={{
-                                                color: '#6b6b80',
-                                                fontSize: '12px',
-                                                opacity: 0.7,
-                                                transition: 'none'
-                                            }}>
-                                                {expandedCommand === command.name ? '▼' : '▶'}
-                                            </span>
-                                        </div>
-
-                                        {/* Command Values Section */}
-                                        <div className="command-values" style={{
-                                            display: 'flex',
-                                            gap: '12px',
-                                            marginBottom: '12px',
-                                            flexWrap: 'wrap'
-                                        }}>
-                                            {/* Current Value */}
-                                            {command.value && (
-                                                <div className="value-box" style={{
-                                                    background: 'rgba(34, 197, 94, 0.1)',
-                                                    border: '1px solid rgba(34, 197, 94, 0.2)',
-                                                    borderRadius: '6px',
-                                                    padding: '8px 12px',
-                                                    minWidth: 'fit-content',
-                                                    flex: '1 1 auto'
-                                                }}>
-                                                    <div style={{
-                                                        fontSize: '11px',
-                                                        color: '#10b981',
-                                                        marginBottom: '4px',
-                                                        fontWeight: '600',
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.5px'
-                                                    }}>
-                                                        Current Value
-                                                    </div>
-                                                    <div style={{
-                                                        fontFamily: 'monospace',
-                                                        fontSize: '14px',
-                                                        color: '#22c55e',
-                                                        fontWeight: '600',
-                                                        wordBreak: 'break-all'
-                                                    }}>
-                                                        {command.value === '' ? '(empty)' : command.value}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Default Value */}
-                                            {command.defaultValue && (
-                                                <div className="value-box" style={{
-                                                    background: 'rgba(59, 130, 246, 0.1)',
-                                                    border: '1px solid rgba(59, 130, 246, 0.2)',
-                                                    borderRadius: '6px',
-                                                    padding: '8px 12px',
-                                                    minWidth: 'fit-content',
-                                                    flex: '1 1 auto'
-                                                }}>
-                                                    <div style={{
-                                                        fontSize: '11px',
-                                                        color: '#3b82f6',
-                                                        marginBottom: '4px',
-                                                        fontWeight: '600',
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.5px'
-                                                    }}>
-                                                        Default Value
-                                                    </div>
-                                                    <div style={{
-                                                        fontFamily: 'monospace',
-                                                        fontSize: '14px',
-                                                        color: '#60a5fa',
-                                                        fontWeight: '600',
-                                                        wordBreak: 'break-all'
-                                                    }}>
-                                                        {command.defaultValue === '' ? '(empty)' : command.defaultValue}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Flags Section */}
-                                        {command.flags.length > 0 && (
                                             <div style={{
-                                                marginBottom: '12px'
+                                                flex: '1',
+                                                minWidth: '0'
                                             }}>
-                                                <div style={{
-                                                    fontSize: '11px',
-                                                    color: '#6b6b80',
-                                                    marginBottom: '8px',
-                                                    fontWeight: '600',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px'
-                                                }}>
-                                                    Properties & Flags
-                                                </div>
+                                                {/* Command Name */}
                                                 <div style={{
                                                     display: 'flex',
-                                                    gap: '8px',
+                                                    alignItems: 'center',
+                                                    gap: '12px',
+                                                    marginBottom: '12px',
                                                     flexWrap: 'wrap'
                                                 }}>
-                                                    {command.flags.map((flag, flagIndex) => (
-                                                        <span
-                                                            key={flagIndex}
-                                                            title={getFlagTooltip(flag)}
-                                                            style={{
-                                                                fontSize: '12px',
-                                                                padding: '4px 10px',
-                                                                background: 'rgba(139, 92, 246, 0.1)',
-                                                                border: '1px solid rgba(139, 92, 246, 0.2)',
-                                                                color: '#a78bfa',
-                                                                borderRadius: '6px',
-                                                                fontWeight: '500',
-                                                                cursor: 'help',
-                                                                transition: 'all 0.2s'
-                                                            }}
-                                                            onMouseEnter={(e) => {
-                                                                e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
-                                                                e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
-                                                                e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.2)';
-                                                            }}
-                                                        >
-                                                            {formatFlag(flag)}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
+                                                    <h3 className="command-name" style={{
+                                                        fontFamily: 'monospace',
+                                                        fontSize: '18px',
+                                                        fontWeight: '700',
+                                                        color: '#8b5cf6',
+                                                        margin: 0,
+                                                        wordBreak: 'break-word'
+                                                    }}>
+                                                        {command.name}
+                                                    </h3>
 
-                                        {/* Description */}
-                                        <div>
-                                            <div style={{
-                                                fontSize: '11px',
-                                                color: '#6b6b80',
-                                                marginBottom: '8px',
-                                                fontWeight: '600',
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '0.5px'
-                                            }}>
-                                                Description
+                                                    {/* Expand/Collapse Indicator */}
+                                                    <span style={{
+                                                        color: '#6b6b80',
+                                                        fontSize: '12px',
+                                                        opacity: 0.7,
+                                                        transition: 'transform 0.2s',
+                                                        transform: expandedCommand === command.name ? 'rotate(90deg)' : 'rotate(0)'
+                                                    }}>
+                                                        ▶
+                                                    </span>
+                                                </div>
+
+                                                {/* Command Values Section */}
+                                                <div className="command-values" style={{
+                                                    display: 'flex',
+                                                    gap: '12px',
+                                                    marginBottom: '12px',
+                                                    flexWrap: 'wrap'
+                                                }}>
+                                                    {/* Current Value */}
+                                                    {command.value && (
+                                                        <div className="value-box" style={{
+                                                            background: 'rgba(34, 197, 94, 0.1)',
+                                                            border: '1px solid rgba(34, 197, 94, 0.2)',
+                                                            borderRadius: '6px',
+                                                            padding: '8px 12px',
+                                                            minWidth: 'fit-content',
+                                                            flex: '1 1 auto'
+                                                        }}>
+                                                            <div style={{
+                                                                fontSize: '11px',
+                                                                color: '#10b981',
+                                                                marginBottom: '4px',
+                                                                fontWeight: '600',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px'
+                                                            }}>
+                                                                Current Value
+                                                            </div>
+                                                            <div style={{
+                                                                fontFamily: 'monospace',
+                                                                fontSize: '14px',
+                                                                fontWeight: '600',
+                                                                wordBreak: 'break-all'
+                                                            }}>
+                                                                {highlightArguments(command.value === '' ? '(empty)' : command.value)}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Default Value */}
+                                                    {command.defaultValue && (
+                                                        <div className="value-box" style={{
+                                                            background: 'rgba(59, 130, 246, 0.1)',
+                                                            border: '1px solid rgba(59, 130, 246, 0.2)',
+                                                            borderRadius: '6px',
+                                                            padding: '8px 12px',
+                                                            minWidth: 'fit-content',
+                                                            flex: '1 1 auto'
+                                                        }}>
+                                                            <div style={{
+                                                                fontSize: '11px',
+                                                                color: '#3b82f6',
+                                                                marginBottom: '4px',
+                                                                fontWeight: '600',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px'
+                                                            }}>
+                                                                Default Value
+                                                            </div>
+                                                            <div style={{
+                                                                fontFamily: 'monospace',
+                                                                fontSize: '14px',
+                                                                fontWeight: '600',
+                                                                wordBreak: 'break-all'
+                                                            }}>
+                                                                {highlightArguments(command.defaultValue === '' ? '(empty)' : command.defaultValue)}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Flags Section */}
+                                                {command.flags.length > 0 && (
+                                                    <div style={{
+                                                        marginBottom: '12px'
+                                                    }}>
+                                                        <div style={{
+                                                            fontSize: '11px',
+                                                            color: '#6b6b80',
+                                                            marginBottom: '8px',
+                                                            fontWeight: '600',
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px'
+                                                        }}>
+                                                            Properties & Flags
+                                                        </div>
+                                                        <div style={{
+                                                            display: 'flex',
+                                                            gap: '8px',
+                                                            flexWrap: 'wrap'
+                                                        }}>
+                                                            {command.flags.map((flag, flagIndex) => (
+                                                                <span
+                                                                    key={flagIndex}
+                                                                    title={getFlagTooltip(flag)}
+                                                                    style={{
+                                                                        fontSize: '12px',
+                                                                        padding: '4px 10px',
+                                                                        background: 'rgba(139, 92, 246, 0.1)',
+                                                                        border: '1px solid rgba(139, 92, 246, 0.2)',
+                                                                        color: '#a78bfa',
+                                                                        borderRadius: '6px',
+                                                                        fontWeight: '500',
+                                                                        cursor: 'help',
+                                                                        transition: 'all 0.2s'
+                                                                    }}
+                                                                    onMouseEnter={(e) => {
+                                                                        e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
+                                                                        e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+                                                                    }}
+                                                                    onMouseLeave={(e) => {
+                                                                        e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
+                                                                        e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.2)';
+                                                                    }}
+                                                                >
+                                                                    {formatFlag(flag)}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Description */}
+                                                <div>
+                                                    <div style={{
+                                                        fontSize: '11px',
+                                                        color: '#6b6b80',
+                                                        marginBottom: '8px',
+                                                        fontWeight: '600',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px'
+                                                    }}>
+                                                        Description
+                                                    </div>
+                                                    <p style={{
+                                                        color: '#a1a1aa',
+                                                        fontSize: '14px',
+                                                        margin: '0',
+                                                        lineHeight: '1.6',
+                                                        display: expandedCommand === command.name ? 'block' : '-webkit-box',
+                                                        WebkitLineClamp: expandedCommand === command.name ? 'unset' : 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden',
+                                                        wordBreak: 'break-word'
+                                                    }}>
+                                                        {command.description || 'No description available for this command.'}
+                                                    </p>
+                                                </div>
+
+                                                {/* Usage Example (when expanded) */}
+                                                {expandedCommand === command.name && command.example && (
+                                                    <div style={{
+                                                        marginTop: '16px',
+                                                        padding: '12px',
+                                                        background: 'rgba(0, 0, 0, 0.3)',
+                                                        borderRadius: '6px',
+                                                        border: '1px solid rgba(139, 92, 246, 0.1)'
+                                                    }}>
+                                                        <div style={{
+                                                            fontSize: '11px',
+                                                            color: '#6b6b80',
+                                                            marginBottom: '8px',
+                                                            fontWeight: '600',
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px'
+                                                        }}>
+                                                            Console Example
+                                                        </div>
+                                                        <code style={{
+                                                            fontFamily: 'monospace',
+                                                            fontSize: '13px',
+                                                            display: 'block',
+                                                            wordBreak: 'break-all'
+                                                        }}>
+                                                            {highlightCommandSyntax(command.example)}
+                                                        </code>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <p style={{
-                                                color: '#a1a1aa',
-                                                fontSize: '14px',
-                                                margin: '0',
-                                                lineHeight: '1.6',
-                                                display: expandedCommand === command.name ? 'block' : '-webkit-box',
-                                                WebkitLineClamp: expandedCommand === command.name ? 'unset' : 2,
-                                                WebkitBoxOrient: 'vertical',
-                                                overflow: 'hidden',
-                                                wordBreak: 'break-word'
+
+                                            {/* Action Buttons */}
+                                            <div style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '8px',
+                                                flexShrink: 0
                                             }}>
-                                                {command.description || 'No description available for this command.'}
-                                            </p>
+                                                <button
+                                                    className="copy-button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleCopyCommand(command, e);
+                                                    }}
+                                                    style={{
+                                                        padding: '8px 16px',
+                                                        background: copiedCommand === command.name ? 'rgba(34, 197, 94, 0.1)' : 'rgba(139, 92, 246, 0.1)',
+                                                        border: `1px solid ${copiedCommand === command.name ? '#22c55e' : 'rgba(139, 92, 246, 0.3)'}`,
+                                                        borderRadius: '6px',
+                                                        color: copiedCommand === command.name ? '#22c55e' : '#8b5cf6',
+                                                        fontSize: '12px',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease',
+                                                        fontWeight: '500',
+                                                        whiteSpace: 'nowrap',
+                                                        position: 'relative',
+                                                        overflow: 'hidden',
+                                                        transform: copiedCommand === command.name ? 'scale(0.95)' : 'scale(1)'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        if (copiedCommand !== command.name) {
+                                                            e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
+                                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                                        }
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        if (copiedCommand !== command.name) {
+                                                            e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
+                                                            e.currentTarget.style.transform = 'scale(1)';
+                                                        }
+                                                    }}
+                                                >
+                                                    <span style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        {copiedCommand === command.name ? (
+                                                            <>
+                                                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                                                    <path 
+                                                                        d="M3 8L6 11L13 4" 
+                                                                        stroke="currentColor" 
+                                                                        strokeWidth="2" 
+                                                                        strokeLinecap="round" 
+                                                                        strokeLinejoin="round"
+                                                                        style={{
+                                                                            strokeDasharray: '50',
+                                                                            animation: 'checkmark 0.3s ease-out forwards'
+                                                                        }}
+                                                                    />
+                                                                </svg>
+                                                                Copied
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                                                    <rect x="4" y="4" width="8" height="10" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                                                                    <path d="M8 2H11C11.5523 2 12 2.44772 12 3V6" stroke="currentColor" strokeWidth="1.5"/>
+                                                                </svg>
+                                                                Copy
+                                                            </>
+                                                        )}
+                                                    </span>
+                                                </button>
+                                            </div>
                                         </div>
-
-                                        {/* Usage Example (when expanded) */}
-                                        {expandedCommand === command.name && command.example && (
-                                            <div style={{
-                                                marginTop: '16px',
-                                                padding: '12px',
-                                                background: 'rgba(0, 0, 0, 0.3)',
-                                                borderRadius: '6px',
-                                                border: '1px solid rgba(139, 92, 246, 0.1)'
-                                            }}>
-                                                <div style={{
-                                                    fontSize: '11px',
-                                                    color: '#6b6b80',
-                                                    marginBottom: '8px',
-                                                    fontWeight: '600',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px'
-                                                }}>
-                                                    Console Example
-                                                </div>
-                                                <code style={{
-                                                    fontFamily: 'monospace',
-                                                    fontSize: '13px',
-                                                    color: '#8b5cf6',
-                                                    display: 'block',
-                                                    wordBreak: 'break-all'
-                                                }}>
-                                                    {command.example}
-                                                </code>
-                                            </div>
-                                        )}
                                     </div>
-
-                                    {/* Action Buttons */}
-                                    <div style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '8px',
-                                        flexShrink: 0
-                                    }}>
-                                        <button
-                                            className="copy-button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleCopyCommand(command);
-                                            }}
-                                            style={{
-                                                padding: '8px 16px',
-                                                background: copiedCommand === command.name ? 'rgba(34, 197, 94, 0.1)' : 'rgba(139, 92, 246, 0.1)',
-                                                border: `1px solid ${copiedCommand === command.name ? '#22c55e' : 'rgba(139, 92, 246, 0.3)'}`,
-                                                borderRadius: '6px',
-                                                color: copiedCommand === command.name ? '#22c55e' : '#8b5cf6',
-                                                fontSize: '12px',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s ease',
-                                                fontWeight: '500',
-                                                whiteSpace: 'nowrap'
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                if (copiedCommand !== command.name) {
-                                                    e.currentTarget.style.background = 'rgba(139, 92, 246, 0.2)';
-                                                }
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                if (copiedCommand !== command.name) {
-                                                    e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
-                                                }
-                                            }}
-                                        >
-                                            {copiedCommand === command.name ? '✓ Copied' : 'Copy'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {/* No Results */}
