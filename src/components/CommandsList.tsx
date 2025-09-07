@@ -2,6 +2,16 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { CS2Command } from '../types/command';
 import { categorizeCommands } from '../utils/commandParser';
+import { useFavorites } from '../hooks/useFavorites';
+import CommandPresets from './CommandPresets';
+import SelectedCommandsPanel from './SelectedCommandsPanel';
+
+interface FavoriteCommand {
+    name: string;
+    value?: string;
+    description: string;
+    category?: string;
+}
 
 interface CommandsListProps {
     commands: CS2Command[];
@@ -14,9 +24,14 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
     const [copiedCommand, setCopiedCommand] = useState<string>('');
     const [expandedCommand, setExpandedCommand] = useState<string>('');
     const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 });
+    const [selectedCommands, setSelectedCommands] = useState<Set<string>>(new Set());
+    const [showPresetsModal, setShowPresetsModal] = useState(false);
+    const [showFavorites, setShowFavorites] = useState(false);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const itemHeight = 200; // Approximate height of each command card
     const buffer = 5; // Number of items to render outside viewport
+
+    const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
     const categorizedCommands = useMemo(() => categorizeCommands(commands), [commands]);
     const categories = ['All', ...Object.keys(categorizedCommands)];
@@ -33,8 +48,15 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
     const filteredCommands = useMemo(() => {
         let filtered = commands;
 
+        // Filter by favorites if enabled
+        if (showFavorites) {
+            filtered = commands.filter(cmd => 
+                isFavorite(cmd.name, cmd.value)
+            );
+        }
+
         // Filter by category
-        if (selectedCategory !== 'All') {
+        if (selectedCategory !== 'All' && !showFavorites) {
             filtered = categorizedCommands[selectedCategory] || [];
         }
 
@@ -47,7 +69,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
         }
 
         return filtered;
-    }, [commands, debouncedSearchTerm, selectedCategory, categorizedCommands]);
+    }, [commands, debouncedSearchTerm, selectedCategory, categorizedCommands, showFavorites, favorites]);
 
     // Handle scroll for virtualization
     const handleScroll = useCallback(() => {
@@ -133,6 +155,177 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
         requestAnimationFrame(() => {
             setExpandedCommand(expandedCommand === commandName ? '' : commandName);
         });
+    };
+
+    // Helper to get category for a command
+    const getCommandCategory = (commandName: string): string => {
+        for (const [category, commands] of Object.entries(categorizedCommands)) {
+            if (commands.some(cmd => cmd.name === commandName)) {
+                return category;
+            }
+        }
+        return 'Other';
+    };
+
+    // Selection functions
+    const toggleCommandSelection = (commandName: string) => {
+        setSelectedCommands(prev => {
+            const newSelection = new Set(prev);
+            if (newSelection.has(commandName)) {
+                newSelection.delete(commandName);
+            } else {
+                newSelection.add(commandName);
+            }
+            return newSelection;
+        });
+    };
+
+    const clearSelectedCommands = () => {
+        setSelectedCommands(new Set());
+    };
+
+    const removeSelectedCommand = (commandName: string) => {
+        setSelectedCommands(prev => {
+            const newSelection = new Set(prev);
+            newSelection.delete(commandName);
+            return newSelection;
+        });
+    };
+
+    const exportSelectedCommands = () => {
+        const selectedCommandsData = commands.filter(cmd => selectedCommands.has(cmd.name));
+        
+        // Create header section matching CommandPresets format
+        const header = `// CS2 Console Commands - Custom Selection
+// Generated on: ${new Date().toLocaleDateString()}
+// Total Commands: ${selectedCommandsData.length}
+
+echo "=====================================";
+echo "Loading custom CS2 configuration...";
+echo "=====================================";
+
+`;
+
+        // Group commands by category
+        const commandsByCategory = selectedCommandsData.reduce((acc, cmd) => {
+            const category = getCommandCategory(cmd.name);
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(cmd);
+            return acc;
+        }, {} as Record<string, CS2Command[]>);
+
+        // Build the config content with categories
+        let configContent = header;
+        
+        Object.entries(commandsByCategory).forEach(([category, cmds]) => {
+            configContent += `// === ${category} ===\n`;
+            cmds.forEach(cmd => {
+                // Add description as comment
+                if (cmd.description) {
+                    const descLines = cmd.description.match(/.{1,70}/g) || [];
+                    descLines.forEach(line => {
+                        configContent += `// ${line}\n`;
+                    });
+                }
+                
+                // Add the command
+                if (cmd.value) {
+                    configContent += `${cmd.name} "${cmd.value}";\n`;
+                } else {
+                    configContent += `${cmd.name};\n`;
+                }
+                configContent += '\n';
+            });
+        });
+
+        // Add footer
+        configContent += `echo "=====================================";
+echo "Configuration loaded successfully!";
+echo "Total commands applied: ${selectedCommandsData.length}";
+echo "=====================================";
+
+host_writeconfig;`;
+
+        // Create and download the file
+        const blob = new Blob([configContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'autoexec.cfg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const exportFavorites = () => {
+        const favoriteCommands = Array.from(favorites.values());
+        
+        // Create header section
+        const header = `// CS2 Console Commands - My Favorites
+// Generated on: ${new Date().toLocaleDateString()}
+// Total Commands: ${favoriteCommands.length}
+
+echo "=====================================";
+echo "Loading favorite CS2 commands...";
+echo "=====================================";
+
+`;
+
+        // Group commands by category
+        const commandsByCategory = favoriteCommands.reduce((acc, cmd) => {
+            const category = cmd.category || 'Other';
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(cmd);
+            return acc;
+        }, {} as Record<string, FavoriteCommand[]>);
+
+        // Build the config content with categories
+        let configContent = header;
+        
+        Object.entries(commandsByCategory).forEach(([category, cmds]) => {
+            configContent += `// === ${category} ===\n`;
+            cmds.forEach(cmd => {
+                // Add description as comment
+                if (cmd.description) {
+                    const descLines = cmd.description.match(/.{1,70}/g) || [];
+                    descLines.forEach((line: string) => {
+                        configContent += `// ${line}\n`;
+                    });
+                }
+                
+                // Add the command
+                if (cmd.value) {
+                    configContent += `${cmd.name} "${cmd.value}";\n`;
+                } else {
+                    configContent += `${cmd.name};\n`;
+                }
+                configContent += '\n';
+            });
+        });
+
+        // Add footer
+        configContent += `echo "=====================================";
+echo "Favorite commands loaded successfully!";
+echo "Total commands applied: ${favoriteCommands.length}";
+echo "=====================================";
+
+host_writeconfig;`;
+
+        // Create and download the file
+        const blob = new Blob([configContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'favorites-autoexec.cfg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     };
 
     // Helper function to format flag names
@@ -310,6 +503,43 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                     }
                 }
                 
+                /* Custom Checkbox Styling */
+                input[type="checkbox"] {
+                    appearance: none;
+                    -webkit-appearance: none;
+                    width: 18px;
+                    height: 18px;
+                    border: 2px solid #3a3a4e;
+                    border-radius: 4px;
+                    background: #2a2a3e;
+                    cursor: pointer;
+                    position: relative;
+                    transition: all 0.2s ease;
+                    margin-right: 8px;
+                }
+                
+                input[type="checkbox"]:hover {
+                    border-color: #8b5cf6;
+                    background: #323248;
+                }
+                
+                input[type="checkbox"]:checked {
+                    background: #8b5cf6;
+                    border-color: #8b5cf6;
+                }
+                
+                input[type="checkbox"]:checked::after {
+                    content: '';
+                    position: absolute;
+                    left: 5px;
+                    top: 2px;
+                    width: 4px;
+                    height: 8px;
+                    border: solid white;
+                    border-width: 0 2px 2px 0;
+                    transform: rotate(45deg);
+                }
+                
                 @media (max-width: 640px) {
                     .main-container {
                         padding: 10px !important;
@@ -354,6 +584,9 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                     .scrollable-content {
                         padding: 12px !important;
                     }
+                    .presets-button {
+                        width: 100% !important;
+                    }
                 }
                 
                 @media (min-width: 641px) and (max-width: 1024px) {
@@ -391,7 +624,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
             {/* Header */}
             <div style={{
                 textAlign: 'center',
-                marginBottom: '40px'
+                marginBottom: '40px',
+                position: 'relative'
             }}>
                 <h1 className="header-title" style={{
                     fontSize: '48px',
@@ -558,7 +792,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                 <div className="search-filter-container" style={{
                     display: 'flex',
                     gap: '20px',
-                    flexWrap: 'wrap'
+                    flexWrap: 'wrap',
+                    alignItems: 'center'
                 }}>
                     {/* Search Bar */}
                     <input
@@ -619,6 +854,119 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                             <option key={cat} value={cat}>{cat}</option>
                         ))}
                     </select>
+
+                    {/* Presets Button */}
+                    <button
+                        className="presets-button"
+                        onClick={() => setShowPresetsModal(true)}
+                        style={{
+                            padding: '12px 20px',
+                            background: '#2a2e3e',
+                            border: '2px solid #3a3a4e',
+                            borderRadius: '8px',
+                            color: '#8b5cf6',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            whiteSpace: 'nowrap'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = '#8b5cf6';
+                            e.currentTarget.style.background = '#323248';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = '#3a3a4e';
+                            e.currentTarget.style.background = '#2a2e3e';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                        }}
+                        onFocus={(e) => {
+                            e.currentTarget.style.borderColor = '#8b5cf6';
+                            e.currentTarget.style.background = '#323248';
+                        }}
+                        onBlur={(e) => {
+                            e.currentTarget.style.borderColor = '#3a3a4e';
+                            e.currentTarget.style.background = '#2a2e3e';
+                        }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M2 3h12M2 8h12M2 13h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            <circle cx="4" cy="3" r="1" fill="currentColor"/>
+                            <circle cx="4" cy="8" r="1" fill="currentColor"/>
+                            <circle cx="4" cy="13" r="1" fill="currentColor"/>
+                        </svg>
+                        Command Presets
+                    </button>
+
+                    {/* Add Favorites Toggle Button */}
+                    <button
+                        onClick={() => setShowFavorites(!showFavorites)}
+                        style={{
+                            padding: '12px 20px',
+                            background: showFavorites ? '#8b5cf6' : '#2a2a3e',
+                            border: '2px solid #3a3a4e',
+                            borderRadius: '8px',
+                            color: showFavorites ? 'white' : '#8b5cf6',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            whiteSpace: 'nowrap',
+                            position: 'relative'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!showFavorites) {
+                                e.currentTarget.style.borderColor = '#8b5cf6';
+                                e.currentTarget.style.background = '#323248';
+                            }
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!showFavorites) {
+                                e.currentTarget.style.borderColor = '#3a3a4e';
+                                e.currentTarget.style.background = '#2a2e3e';
+                            }
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                        }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path 
+                                d="M8 1.5l2.09 4.23 4.68.68-3.39 3.3.8 4.66L8 12.15l-4.18 2.2.8-4.66L1.23 6.41l4.68-.68L8 1.5z" 
+                                stroke="currentColor" 
+                                strokeWidth="1.5"
+                                fill={showFavorites ? "currentColor" : "none"}
+                            />
+                        </svg>
+                        Favorites
+                        {favorites.size > 0 && (
+                            <span style={{
+                                position: 'absolute',
+                                top: '-8px',
+                                right: '-8px',
+                                background: '#ef4444',
+                                color: 'white',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                padding: '2px 6px',
+                                borderRadius: '10px',
+                                minWidth: '18px',
+                                textAlign: 'center'
+                            }}>
+                                {favorites.size}
+                            </span>
+                        )}
+                    </button>
                 </div>
 
                 {/* Results Count */}
@@ -758,6 +1106,24 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                     marginBottom: '12px',
                                                     flexWrap: 'wrap'
                                                 }}>
+                                                    {/* Selection Checkbox */}
+                                                    <label style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        cursor: 'pointer',
+                                                        userSelect: 'none'
+                                                    }}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedCommands.has(command.name)}
+                                                            onChange={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleCommandSelection(command.name);
+                                                            }}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        />
+                                                    </label>
+
                                                     <h3 className="command-name" style={{
                                                         fontFamily: 'monospace',
                                                         fontSize: '18px',
@@ -768,6 +1134,39 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                     }}>
                                                         {command.name}
                                                     </h3>
+
+                                                    {/* Favorites Button */}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleFavorite({
+                                                                name: command.name,
+                                                                value: command.value,
+                                                                description: command.description,
+                                                                category: getCommandCategory(command.name)
+                                                            });
+                                                        }}
+                                                        style={{
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            cursor: 'pointer',
+                                                            padding: '4px',
+                                                            borderRadius: '4px',
+                                                            transition: 'all 0.2s',
+                                                            color: isFavorite(command.name, command.value) ? '#f59e0b' : '#6b6b80'
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.background = 'none';
+                                                        }}
+                                                        title={isFavorite(command.name, command.value) ? 'Remove from favorites' : 'Add to favorites'}
+                                                    >
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill={isFavorite(command.name, command.value) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                                                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                                                        </svg>
+                                                    </button>
 
                                                     {/* Expand/Collapse Indicator */}
                                                     <span style={{
@@ -1069,6 +1468,77 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                     )}
                 </div>
             </div>
+
+            {/* Selected Commands Panel */}
+            {selectedCommands.size > 0 && (
+                <SelectedCommandsPanel
+                    selectedCommands={new Map(Array.from(selectedCommands).map(name => {
+                        const command = commands.find(cmd => cmd.name === name)!;
+                        return [name, {
+                            command: command.name,
+                            value: command.value,
+                            description: command.description,
+                            category: getCommandCategory(command.name)
+                        }];
+                    }))}
+                    onRemove={removeSelectedCommand}
+                    onClear={clearSelectedCommands}
+                    onExport={exportSelectedCommands}
+                />
+            )}
+
+            {/* Command Presets Modal */}
+            {showPresetsModal && (
+                <CommandPresets
+                    isOpen={showPresetsModal}
+                    onClose={() => setShowPresetsModal(false)}
+                />
+            )}
+
+            {/* Export Favorites Button - Shown only when favorites are visible */}
+            {showFavorites && favorites.size > 0 && (
+                <div style={{
+                    marginTop: '20px',
+                    textAlign: 'center'
+                }}>
+                    <button
+                        onClick={exportFavorites}
+                        style={{
+                            padding: '12px 20px',
+                            background: '#2a2e3e',
+                            border: '2px solid #3a3a4e',
+                            borderRadius: '8px',
+                            color: '#22c55e',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            whiteSpace: 'nowrap',
+                            position: 'relative'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = '#22c55e';
+                            e.currentTarget.style.background = '#323248';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = '#3a3a4e';
+                            e.currentTarget.style.background = '#2a2e3e';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                        }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 13h10M8 1v10m0 0l3-3m-3 3L5 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Export Favorites
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
