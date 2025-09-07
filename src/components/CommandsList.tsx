@@ -18,20 +18,20 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
 
     const filteredCommands = useMemo(() => {
         let filtered = commands;
-        
+
         // Filter by category
         if (selectedCategory !== 'All') {
             filtered = categorizedCommands[selectedCategory] || [];
         }
-        
+
         // Filter by search term
         if (searchTerm) {
-            filtered = filtered.filter(cmd => 
+            filtered = filtered.filter(cmd =>
                 cmd.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 cmd.description.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
-        
+
         return filtered;
     }, [commands, searchTerm, selectedCategory, categorizedCommands]);
 
@@ -99,6 +99,15 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
             padding: '20px'
         }}>
             <style jsx>{`
+                @keyframes pulse {
+                    0%, 100% {
+                        opacity: 1;
+                    }
+                    50% {
+                        opacity: 0.5;
+                    }
+                }
+                
                 @media (max-width: 640px) {
                     .main-container {
                         padding: 10px !important;
@@ -202,6 +211,134 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                 </p>
             </div>
 
+            {/* Quick Guide Section */}
+            <div style={{
+                background: 'rgba(139, 92, 246, 0.05)',
+                border: '1px solid rgba(139, 92, 246, 0.2)',
+                borderRadius: '12px',
+                padding: '20px',
+                marginBottom: '30px',
+                position: 'relative'
+            }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginBottom: '15px'
+                }}>
+                    <div style={{
+                        width: '8px',
+                        height: '8px',
+                        background: '#8b5cf6',
+                        borderRadius: '50%',
+                        animation: 'pulse 2s infinite'
+                    }}></div>
+                    <h3 style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#8b5cf6',
+                        margin: 0
+                    }}>
+                        How To Use The Console Commands
+                    </h3>
+                </div>
+
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gap: '20px',
+                    color: '#a1a1aa',
+                    fontSize: '14px',
+                    lineHeight: '1.6'
+                }}>
+                    <div>
+                        <div style={{
+                            fontWeight: '600',
+                            color: '#d4d4d8',
+                            marginBottom: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}>
+                            <span style={{ color: '#8b5cf6' }}>1.</span>
+                            Enabling the Console
+                        </div>
+                        <div style={{ paddingLeft: '16px' }}>
+                            First, go to Settings then click on Game, under Enable Developer Console, select Yes.
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style={{
+                            fontWeight: '600',
+                            color: '#d4d4d8',
+                            marginBottom: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}>
+                            <span style={{ color: '#8b5cf6' }}>2.</span>
+                            Opening the Console
+                        </div>
+                        <div style={{ paddingLeft: '16px' }}>
+                            Press the <code style={{
+                                background: 'rgba(0, 0, 0, 0.3)',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                color: '#8b5cf6',
+                                fontFamily: 'monospace'
+                            }}>~</code> (tilde) or <code style={{
+                                background: 'rgba(0, 0, 0, 0.3)',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                color: '#8b5cf6',
+                                fontFamily: 'monospace'
+                            }}>`</code> key on your keyboard in-game to open the console.
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style={{
+                            fontWeight: '600',
+                            color: '#d4d4d8',
+                            marginBottom: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}>
+                            <span style={{ color: '#8b5cf6' }}>3.</span>
+                            Enter Commands
+                        </div>
+                        <div style={{ paddingLeft: '16px' }}>
+                            Type/paste the command and press Enter. <br /> Example: <code style={{
+                                background: 'rgba(0, 0, 0, 0.3)',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                color: '#22c55e',
+                                fontFamily: 'monospace'
+                            }}>fps_max 300</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{
+                    marginTop: '16px',
+                    paddingTop: '16px',
+                    borderTop: '1px solid rgba(139, 92, 246, 0.1)',
+                    fontSize: '13px',
+                    color: '#6b6b80'
+                }}>
+                    <strong style={{ color: '#f59e0b' }}>Note:</strong> Commands with the "cheat" flag require <code style={{
+                        background: 'rgba(0, 0, 0, 0.3)',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        color: '#f59e0b',
+                        fontFamily: 'monospace',
+                        fontSize: '12px'
+                    }}>sv_cheats 1</code> to be enabled on local/private servers only.
+                </div>
+            </div>
+
             {/* Search and Filters */}
             <div style={{
                 position: 'sticky',
@@ -210,7 +347,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                 paddingTop: '20px',
                 paddingBottom: '20px',
                 marginBottom: '10px',
-                marginTop: '-20px'
+                marginTop: '-20px',
+                background: 'linear-gradient(180deg, #1a1a2e 0%, #1a1a2e 90%, transparent 100%)'
             }}>
                 <div className="search-filter-container" style={{
                     display: 'flex',
@@ -384,7 +522,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                     flexWrap: 'wrap',
                                     gap: '10px'
                                 }}>
-                                    <div style={{ 
+                                    <div style={{
                                         flex: '1',
                                         minWidth: '0'
                                     }}>
@@ -406,7 +544,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                             }}>
                                                 {command.name}
                                             </h3>
-                                            
+
                                             {/* Expand/Collapse Indicator */}
                                             <span style={{
                                                 color: '#6b6b80',
@@ -456,7 +594,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                     </div>
                                                 </div>
                                             )}
-                                            
+
                                             {/* Default Value */}
                                             {command.defaultValue && (
                                                 <div className="value-box" style={{
@@ -569,7 +707,7 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                         </div>
 
                                         {/* Usage Example (when expanded) */}
-                                        {expandedCommand === command.name && (
+                                        {expandedCommand === command.name && command.example && (
                                             <div style={{
                                                 marginTop: '16px',
                                                 padding: '12px',
@@ -594,35 +732,8 @@ const CommandsList: React.FC<CommandsListProps> = ({ commands }) => {
                                                     display: 'block',
                                                     wordBreak: 'break-all'
                                                 }}>
-                                                    {command.value || command.defaultValue ? 
-                                                        `${command.name} ${command.value || command.defaultValue}` : 
-                                                        command.name
-                                                    }
+                                                    {command.example}
                                                 </code>
-                                                {command.value && command.defaultValue && command.value !== command.defaultValue && (
-                                                    <div style={{
-                                                        marginTop: '8px',
-                                                        paddingTop: '8px',
-                                                        borderTop: '1px solid rgba(139, 92, 246, 0.1)'
-                                                    }}>
-                                                        <div style={{
-                                                            fontSize: '11px',
-                                                            color: '#6b6b80',
-                                                            marginBottom: '4px'
-                                                        }}>
-                                                            To reset to default:
-                                                        </div>
-                                                        <code style={{
-                                                            fontFamily: 'monospace',
-                                                            fontSize: '13px',
-                                                            color: '#60a5fa',
-                                                            display: 'block',
-                                                            wordBreak: 'break-all'
-                                                        }}>
-                                                            {command.name} {command.defaultValue}
-                                                        </code>
-                                                    </div>
-                                                )}
                                             </div>
                                         )}
                                     </div>

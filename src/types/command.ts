@@ -4,6 +4,7 @@ export interface CS2Command {
     defaultValue: string;
     flags: string[];
     description: string;
+    example: string;
 }
 
 export interface CommandCategory {

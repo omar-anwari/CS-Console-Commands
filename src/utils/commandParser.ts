@@ -14,38 +14,28 @@ export function parseCommandsFromCSV(csvText: string): CS2Command[] {
     const seenNames = new Set<string>();
     
     for (let i = startIndex; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
+        const fields = parseCSVLine(lines[i]);
         
-        // Parse CSV line (handle quoted values)
-        const values = parseCSVLine(line);
-        
-        if (values.length >= 4) {
-            const [name, value, defaultValue, ...rest] = values;
-            const flagsString = rest[0] || '';
-            const description = rest.slice(1).join(',').trim();
+        if (fields.length >= 6) {
+            const name = fields[0]?.trim();
             
-            // Clean and validate command name
-            const commandName = name.trim();
-            
-            // Skip if name is empty or duplicate
-            if (!commandName || seenNames.has(commandName)) {
-                console.warn(`Skipping invalid or duplicate command: "${commandName}"`);
+            // Skip if name is empty or already processed
+            if (!name || seenNames.has(name)) {
                 continue;
             }
             
-            seenNames.add(commandName);
+            seenNames.add(name);
             
-            // Parse flags
-            const flags = flagsString.split(/\s+/).filter(f => f && f !== '-');
+            const command: CS2Command = {
+                name: name,
+                value: fields[1]?.trim() || '',
+                defaultValue: fields[2]?.trim() || '',
+                flags: fields[3] ? fields[3].split(' ').filter(f => f.trim()) : [],
+                description: fields[4]?.trim() || '',
+                example: fields[5]?.trim() || ''
+            };
             
-            commands.push({
-                name: commandName,
-                value: value.trim(),
-                defaultValue: defaultValue.trim(),
-                flags: flags,
-                description: description || ''
-            });
+            commands.push(command);
         }
     }
     
